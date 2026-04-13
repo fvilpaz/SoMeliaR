@@ -6,9 +6,19 @@ services:
     startCommand: "gunicorn config.wsgi:application"
     envVars:
       - key: SECRET_KEY
-        generateValue: true       # Render genera una clave aleatoria
+        generateValue: true
       - key: DEBUG
         value: "False"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: someliar-db
+          property: connectionString
       - key: GEMINI_API_KEY
         sync: false               # La introduces manualmente en el dashboard
     autoDeploy: true
+
+databases:
+  - name: someliar-db
+    databaseName: someliar
+    user: someliar
+    plan: free                    # Gratis 90 dias, luego $7/mes
