@@ -32,7 +32,7 @@ def obtener_vinos_bajo_minimo():
                 "stock_actual": stock,
                 "stock_minimo": config.stock_minimo,
                 "stock_optimo": config.stock_optimo,
-                "cantidad_sugerida": config.stock_optimo - stock,
+                "cantidad_sugerida": max(0, int((config.stock_optimo - stock).to_integral_value())),
                 "proveedor": vp.proveedor if vp else None,
                 "precio": vp.precio if vp else vino.precio_coste,
             })

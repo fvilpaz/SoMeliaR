@@ -36,7 +36,7 @@
                     <td><strong class="text-danger">{{ item.stock_actual|fmt_num }}</strong></td>
                     <td>{{ item.stock_minimo }}</td>
                     <td>{{ item.stock_optimo }}</td>
-                    <td><strong>{{ item.cantidad_sugerida }}</strong></td>
+                    <td><strong>{{ item.cantidad_sugerida|fmt_num }}</strong></td>
                     <td>{{ item.precio|fmt_num }}€</td>
                 </tr>
                 {% endfor %}
