@@ -15692,5 +15692,59 @@
     "cantidad_final": null,
     "precio_unitario": "8.30"
   }
+},
+{
+  "model": "auth.user",
+  "pk": 1,
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$OzrF5tYCAc5Lyiybnyd6uC$KJrCP+pdFuEbmMYjfJeUBe62iyQH2R6gbm9Dmyg0J4s=",
+    "last_login": null,
+    "is_superuser": true,
+    "username": "admin",
+    "first_name": "",
+    "last_name": "",
+    "email": "admin@someliar.demo",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2026-04-13T13:26:00.222Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 2,
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$lmm1xdYjsYsZaBJ5hhjmwX$zmujUUVtdBIDJkQmZRcBBM8FSlV3qtoWGPnLvVZTCDY=",
+    "last_login": null,
+    "is_superuser": true,
+    "username": "fvilpaz",
+    "first_name": "",
+    "last_name": "",
+    "email": "fvilpaz@gmail.com",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2026-04-13T15:53:02.947Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 3,
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$wwtqAPUn5kLDcISJlVPrK6$6lrzgk8FZwtOp7YI8AV2E9blDmQSesKMbwzwDLXGHwk=",
+    "last_login": null,
+    "is_superuser": true,
+    "username": "nando",
+    "first_name": "",
+    "last_name": "",
+    "email": "fvilpaz@gmail.com",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2026-04-13T15:55:05.197Z",
+    "groups": [],
+    "user_permissions": []
+  }
 }
 ]
