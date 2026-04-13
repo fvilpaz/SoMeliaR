@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: someliar
+    env: python
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn config.wsgi:application"
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true       # Render genera una clave aleatoria
+      - key: DEBUG
+        value: "False"
+      - key: GEMINI_API_KEY
+        sync: false               # La introduces manualmente en el dashboard
+    autoDeploy: true
