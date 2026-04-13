@@ -59,6 +59,23 @@ body {
   letter-spacing: 0.02em;
 }
 
+/* Foto en la topbar móvil */
+.topbar-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  flex-shrink: 0;
+}
+
+/* En landscape: ocultar la foto para ahorrar espacio */
+@media (orientation: landscape) {
+  .topbar-avatar {
+    display: none;
+  }
+}
+
 /* ==================================================
    WRAPPER PRINCIPAL
    ================================================== */
