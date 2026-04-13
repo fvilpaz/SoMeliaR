@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load fmt_filters %}
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
@@ -74,7 +75,7 @@
                                 </a>
                             </td>
                             <td>{{ f.count }}</td>
-                            <td>{{ f.stock_total }} uds.</td>
+                            <td>{{ f.stock_total|fmt_num }} uds.</td>
                             <td>
                                 {% if f.bajo_minimo > 0 %}
                                 <span class="badge bg-danger">{{ f.bajo_minimo }}</span>
@@ -113,7 +114,7 @@
                 {% for a in alertas %}
                 <tr>
                     <td><a href="{% url 'bodega:vino_detail' a.vino.pk %}">{{ a.vino }}</a></td>
-                    <td><strong class="text-danger">{{ a.stock_actual }}</strong></td>
+                    <td><strong class="text-danger">{{ a.stock_actual|fmt_num }}</strong></td>
                     <td>{{ a.stock_minimo }}</td>
                     <td>{{ a.stock_minimo|add:"-"|add:a.stock_actual }}</td>
                 </tr>

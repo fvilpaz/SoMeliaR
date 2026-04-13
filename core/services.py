@@ -311,6 +311,16 @@ def ejecutar_comando(comando):
         nuevo_stock = vino.stock_actual
         accion = "Venta" if tipo == "venta" else "Entrada" if tipo == "entrada" else "Ajuste"
 
+        mensaje = f"✓ {accion} registrada: {_fmt(abs(cant))} × {vino}. Stock actual: {_fmt(nuevo_stock)}"
+
+        try:
+            cfg = vino.stock_config
+            if nuevo_stock < cfg.stock_minimo:
+                necesitas = cfg.stock_optimo - nuevo_stock
+                mensaje += f" ⚠️ Stock bajo mínimo ({cfg.stock_minimo}). Pide {_fmt(necesitas)} para llegar al óptimo ({cfg.stock_optimo})."
+        except Exception:
+            pass
+
         return {
             "ok": True,
             "tipo": tipo,
@@ -318,7 +328,8 @@ def ejecutar_comando(comando):
             "vino_id": vino.pk,
             "cantidad": float(abs(cant)),
             "stock_nuevo": float(nuevo_stock),
-            "mensaje": f"✓ {accion} registrada: {_fmt(abs(cant))} × {vino}. Stock actual: {_fmt(nuevo_stock)}",
+            "bajo_minimo": vino.bajo_minimo,
+            "mensaje": mensaje,
         }
 
     if tipo == "desconocido":

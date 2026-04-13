@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load fmt_filters %}
 {% block title %}Pedidos{% endblock %}
 
 {% block content %}
@@ -40,7 +41,7 @@
                     </td>
                     <td>{% if p.generado_por_ia %}<i class="bi bi-robot text-warning"></i>{% endif %}</td>
                     <td>{{ p.fecha_creacion|date:"d/m/Y H:i" }}</td>
-                    <td>{{ p.total|floatformat:2 }}€</td>
+                    <td>{{ p.total|fmt_num }}€</td>
                     <td>
                         <a href="{% url 'pedidos:pedido_detail' p.pk %}" class="btn btn-sm btn-outline-primary">
                             <i class="bi bi-eye"></i> Ver

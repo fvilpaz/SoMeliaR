@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load fmt_filters %}
 {% block title %}{{ vino }}{% endblock %}
 
 {% block content %}
@@ -34,12 +35,12 @@
                     <dd class="col-sm-8">{{ vino.variedades }}</dd>
                     {% endif %}
                     <dt class="col-sm-4">Precio Coste</dt>
-                    <dd class="col-sm-8">{{ vino.precio_coste }}€</dd>
+                    <dd class="col-sm-8">{{ vino.precio_coste|fmt_num }}€</dd>
                     <dt class="col-sm-4">Precio Carta</dt>
-                    <dd class="col-sm-8">{{ vino.precio_carta }}€</dd>
+                    <dd class="col-sm-8">{{ vino.precio_carta|fmt_num }}€</dd>
                     {% if vino.es_copa %}
                     <dt class="col-sm-4">Precio Copa</dt>
-                    <dd class="col-sm-8">{{ vino.precio_copa }}€</dd>
+                    <dd class="col-sm-8">{{ vino.precio_copa|fmt_num }}€</dd>
                     {% endif %}
                     <dt class="col-sm-4">Ubicación</dt>
                     <dd class="col-sm-8">
@@ -67,7 +68,7 @@
             <div class="card-header">Stock</div>
             <div class="card-body text-center">
                 <p class="display-4 {% if vino.bajo_minimo %}text-danger{% else %}text-success{% endif %}">
-                    {{ vino.stock_actual }}
+                    {{ vino.stock_actual|fmt_num }}
                 </p>
                 <p class="text-muted">botellas en bodega</p>
                 {% if vino.stock_config %}
@@ -107,7 +108,7 @@
                             {{ m.get_tipo_display }}
                         </span>
                     </td>
-                    <td>{% if m.cantidad > 0 %}+{% endif %}{{ m.cantidad }}</td>
+                    <td>{% if m.cantidad > 0 %}+{% endif %}{{ m.cantidad|fmt_num }}</td>
                     <td>{{ m.notas|default:"-" }}</td>
                 </tr>
                 {% empty %}

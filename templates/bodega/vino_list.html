@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load fmt_filters %}
 {% block title %}Bodega{% endblock %}
 
 {% block content %}
@@ -36,12 +37,12 @@
                 </p>
                 <div class="d-flex justify-content-between align-items-center">
                     <span class="badge {% if vino.bajo_minimo %}bg-danger{% else %}bg-success{% endif %} fs-6">
-                        {{ vino.stock_actual }} uds.
+                        {{ vino.stock_actual|fmt_num }} uds.
                     </span>
                     <span>
                         {% if vino.es_copa %}<span class="badge bg-info"><i class="bi bi-cup"></i> Copa</span>{% endif %}
                         {% if vino.via_coupa %}<span class="badge bg-secondary">Coupa</span>{% endif %}
-                        <span class="text-muted">{{ vino.precio_coste }}€</span>
+                        <span class="text-muted">{{ vino.precio_coste|fmt_num }}€</span>
                     </span>
                 </div>
             </div>

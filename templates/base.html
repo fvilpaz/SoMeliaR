@@ -11,56 +11,92 @@
     <link rel="stylesheet" href="{% static 'css/layout.css' %}">
 </head>
 <body>
-    <div class="d-flex">
-        <!-- Sidebar -->
-        <nav id="sidebar" class="bg-dark text-white p-3" style="width: 250px; min-height: 100vh;">
-            <div class="mb-4 text-center">
-                <img src="{% static 'img/logo_cayetano.jpeg' %}" alt="SoMeliaR"
-                     class="rounded-circle mb-2" style="width: 80px; height: 80px; object-fit: cover;">
-                <h5 class="mb-0">SoMeliaR</h5>
-                <small class="text-secondary">Gestión de Bodega</small>
+
+    <!-- ── Topbar (visible sólo en móvil / tablet < lg) ── -->
+    <header class="topbar d-lg-none">
+        <button class="topbar-toggle" type="button"
+                data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-controls="sidebar"
+                aria-label="Abrir menú">
+            <i class="bi bi-list"></i>
+        </button>
+        <span class="topbar-brand">SoMeliaR</span>
+    </header>
+
+    <div class="app-wrapper">
+
+        <!-- ── Sidebar: offcanvas en móvil, fijo en desktop ── -->
+        <nav id="sidebar"
+             class="offcanvas-lg offcanvas-start sidebar-nav bg-dark text-white"
+             tabindex="-1" aria-labelledby="sidebarLabel">
+
+            <!-- Cabecera del drawer (sólo visible en móvil) -->
+            <div class="offcanvas-header">
+                <div class="d-flex align-items-center gap-2">
+                    <img src="{% static 'img/logo_cayetano.jpeg' %}" alt="SoMeliaR"
+                         class="sidebar-logo-sm">
+                    <div>
+                        <div class="fw-bold text-white lh-1" id="sidebarLabel">SoMeliaR</div>
+                        <small class="text-secondary">Gestión de Bodega</small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white"
+                        data-bs-dismiss="offcanvas" data-bs-target="#sidebar"
+                        aria-label="Cerrar"></button>
             </div>
-            <ul class="nav flex-column">
-                <li class="nav-item">
-                    <a class="nav-link text-white" href="{% url 'core:dashboard' %}">
-                        <i class="bi bi-speedometer2"></i> Dashboard
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-white" href="{% url 'bodega:vino_list' %}">
-                        <i class="bi bi-grid"></i> Bodega
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-white" href="{% url 'proveedores:proveedor_list' %}">
-                        <i class="bi bi-truck"></i> Proveedores
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-white" href="{% url 'pedidos:pedido_list' %}">
-                        <i class="bi bi-cart"></i> Pedidos
-                    </a>
-                </li>
-                <li class="nav-item mt-3">
-                    <a class="nav-link text-success" href="{% url 'core:asistente' %}">
-                        <i class="bi bi-mic-fill"></i> Asistente de Voz
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-warning" href="{% url 'pedidos:analizar_stock' %}">
-                        <i class="bi bi-robot"></i> Analizar Stock (IA)
-                    </a>
-                </li>
-                <li class="nav-item mt-3">
-                    <a class="nav-link text-secondary" href="{% url 'admin:index' %}">
-                        <i class="bi bi-gear"></i> Admin
-                    </a>
-                </li>
-            </ul>
+
+            <!-- Cuerpo del sidebar -->
+            <div class="offcanvas-body sidebar-body">
+
+                <!-- Marca — sólo en desktop (Bootstrap oculta offcanvas-header en ≥ lg) -->
+                <div class="sidebar-brand d-none d-lg-flex flex-column align-items-center py-4 px-3">
+                    <img src="{% static 'img/logo_cayetano.jpeg' %}" alt="SoMeliaR"
+                         class="sidebar-logo mb-2">
+                    <div class="fw-bold text-white">SoMeliaR</div>
+                    <small class="text-secondary">Gestión de Bodega</small>
+                </div>
+
+                <ul class="nav flex-column px-2 pb-3">
+                    <li class="nav-item">
+                        <a class="nav-link sidebar-link text-white" href="{% url 'core:dashboard' %}">
+                            <i class="bi bi-speedometer2"></i><span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link sidebar-link text-white" href="{% url 'bodega:vino_list' %}">
+                            <i class="bi bi-grid"></i><span>Bodega</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link sidebar-link text-white" href="{% url 'proveedores:proveedor_list' %}">
+                            <i class="bi bi-truck"></i><span>Proveedores</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link sidebar-link text-white" href="{% url 'pedidos:pedido_list' %}">
+                            <i class="bi bi-cart"></i><span>Pedidos</span>
+                        </a>
+                    </li>
+                    <li class="nav-item sidebar-divider">
+                        <a class="nav-link sidebar-link sidebar-link--success" href="{% url 'core:asistente' %}">
+                            <i class="bi bi-mic-fill"></i><span>Asistente de Voz</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link sidebar-link sidebar-link--warning" href="{% url 'pedidos:analizar_stock' %}">
+                            <i class="bi bi-robot"></i><span>Analizar Stock (IA)</span>
+                        </a>
+                    </li>
+                    <li class="nav-item sidebar-divider">
+                        <a class="nav-link sidebar-link text-secondary" href="{% url 'admin:index' %}">
+                            <i class="bi bi-gear"></i><span>Admin</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
         </nav>
 
-        <!-- Main content -->
-        <main class="flex-grow-1 p-4 bg-light" style="min-height: 100vh;">
+        <!-- ── Contenido principal ── -->
+        <main class="app-main">
             {% if messages %}
             <div class="mb-3">
                 {% for message in messages %}
@@ -78,6 +114,29 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <script>
+    // Marcar enlace activo en el sidebar
+    (function () {
+        const path = window.location.pathname;
+        document.querySelectorAll('#sidebar .sidebar-link').forEach(function (link) {
+            const href = link.getAttribute('href');
+            if (href && href !== '/' && path.startsWith(href)) {
+                link.classList.add('active');
+            } else if (href === path) {
+                link.classList.add('active');
+            }
+        });
+    })();
+
+    // Cerrar el sidebar al navegar en móvil
+    document.querySelectorAll('#sidebar .sidebar-link').forEach(function (link) {
+        link.addEventListener('click', function () {
+            var el = document.getElementById('sidebar');
+            var instance = bootstrap.Offcanvas.getInstance(el);
+            if (instance) { instance.hide(); }
+        });
+    });
+    </script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>
