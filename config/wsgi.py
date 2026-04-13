@@ -17,5 +17,14 @@ if os.environ.get("DEBUG", "True") == "False":
             call_command("loaddata", "fixtures/initial_data.json")
     except Exception:
         pass
+    # Crear superusuario desde variables de entorno (ADMIN_USER / ADMIN_PASS)
+    try:
+        from django.contrib.auth.models import User
+        admin_user = os.environ.get("ADMIN_USER", "admin")
+        admin_pass = os.environ.get("ADMIN_PASS")
+        if admin_pass and not User.objects.filter(username=admin_user).exists():
+            User.objects.create_superuser(admin_user, "", admin_pass)
+    except Exception:
+        pass
 
 application = get_wsgi_application()
