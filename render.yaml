@@ -3,22 +3,12 @@ services:
     name: someliar
     env: python
     buildCommand: "./build.sh"
-    startCommand: "python manage.py migrate --no-input && python manage.py collectstatic --no-input && gunicorn config.wsgi:application"
+    startCommand: "gunicorn config.wsgi:application"
     envVars:
       - key: SECRET_KEY
         generateValue: true
       - key: DEBUG
         value: "False"
-      - key: DATABASE_URL
-        fromDatabase:
-          name: someliar-db
-          property: connectionString
       - key: GEMINI_API_KEY
-        sync: false               # La introduces manualmente en el dashboard
+        sync: false
     autoDeploy: true
-
-databases:
-  - name: someliar-db
-    databaseName: someliar
-    user: someliar
-    plan: free                    # Gratis 90 dias, luego $7/mes
