@@ -6,36 +6,36 @@
 <h2 class="mb-4"><i class="bi bi-speedometer2"></i> Dashboard de Bodega</h2>
 
 <!-- Resumen rápido -->
-<div class="row mb-4">
-    <div class="col-md-3">
-        <div class="card text-bg-primary">
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="card text-bg-primary h-100">
             <div class="card-body">
                 <h5 class="card-title">Vinos Activos</h5>
-                <p class="display-6">{{ total_vinos }}</p>
+                <p class="display-6 mb-0">{{ total_vinos }}</p>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card text-bg-danger">
+    <div class="col-6 col-md-3">
+        <div class="card text-bg-danger h-100">
             <div class="card-body">
                 <h5 class="card-title">Bajo Mínimo</h5>
-                <p class="display-6">{{ alertas|length }}</p>
+                <p class="display-6 mb-0">{{ alertas|length }}</p>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card text-bg-warning">
+    <div class="col-6 col-md-3">
+        <div class="card text-bg-warning h-100">
             <div class="card-body">
-                <h5 class="card-title">Pedidos Pendientes</h5>
-                <p class="display-6">{{ pedidos_pendientes }}</p>
+                <h5 class="card-title">Pedidos</h5>
+                <p class="display-6 mb-0">{{ pedidos_pendientes }}</p>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card text-bg-success">
+    <div class="col-6 col-md-3">
+        <div class="card text-bg-success h-100">
             <div class="card-body">
                 <h5 class="card-title">Familias</h5>
-                <p class="display-6">{{ familias|length }}</p>
+                <p class="display-6 mb-0">{{ familias|length }}</p>
             </div>
         </div>
     </div>

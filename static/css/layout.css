@@ -239,10 +239,15 @@ body {
    ================================================== */
 .app-main {
   flex: 1 1 0;
-  min-width: 0;               /* evita desbordamiento en flex */
-  padding: 1.25rem 1rem;
+  min-width: 0;
+  padding: 1rem;
   background: #f4f6f9;
   min-height: 100vh;
+}
+
+/* Sm+: más aire */
+@media (min-width: 480px) {
+  .app-main { padding: 1.25rem; }
 }
 
 @media (min-width: 576px) {
