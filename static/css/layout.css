@@ -69,8 +69,26 @@ body {
   flex-shrink: 0;
 }
 
-/* En landscape: ocultar la foto para ahorrar espacio */
-@media (orientation: landscape) {
+/* Portrait: topbar más alto, foto y nombre centrados */
+@media (max-width: 991.98px) and (orientation: portrait) {
+  .topbar {
+    height: auto;
+    padding: 0.6rem 1rem 0.6rem;
+    justify-content: flex-start;
+    gap: 0.75rem;
+  }
+  .topbar-avatar {
+    width: 44px;
+    height: 44px;
+    border: 2px solid rgba(255,255,255,0.4);
+  }
+  .app-wrapper {
+    padding-top: 68px;   /* compensa el topbar más alto */
+  }
+}
+
+/* Landscape: ocultar foto, topbar compacto */
+@media (max-width: 991.98px) and (orientation: landscape) {
   .topbar-avatar {
     display: none;
   }
