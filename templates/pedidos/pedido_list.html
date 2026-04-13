@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block title %}Pedidos{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-cart"></i> Pedidos</h2>
+    <a href="{% url 'pedidos:analizar_stock' %}" class="btn btn-warning">
+        <i class="bi bi-robot"></i> Analizar Stock
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Proveedor</th>
+                    <th>Estado</th>
+                    <th>IA</th>
+                    <th>Fecha</th>
+                    <th>Total</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in pedidos %}
+                <tr>
+                    <td>{{ p.pk }}</td>
+                    <td>{{ p.proveedor }}</td>
+                    <td>
+                        <span class="badge
+                            {% if p.estado == 'borrador' %}bg-secondary
+                            {% elif p.estado == 'pendiente' %}bg-warning text-dark
+                            {% elif p.estado == 'enviado' %}bg-success
+                            {% elif p.estado == 'recibido' %}bg-primary
+                            {% endif %}">
+                            {{ p.get_estado_display }}
+                        </span>
+                    </td>
+                    <td>{% if p.generado_por_ia %}<i class="bi bi-robot text-warning"></i>{% endif %}</td>
+                    <td>{{ p.fecha_creacion|date:"d/m/Y H:i" }}</td>
+                    <td>{{ p.total|floatformat:2 }}€</td>
+                    <td>
+                        <a href="{% url 'pedidos:pedido_detail' p.pk %}" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-eye"></i> Ver
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-muted">No hay pedidos. Usa "Analizar Stock" para generar pedidos.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

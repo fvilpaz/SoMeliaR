@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block title %}{{ proveedor }}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'proveedores:proveedor_list' %}">Proveedores</a></li>
+        <li class="breadcrumb-item active">{{ proveedor }}</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">Datos del Proveedor</div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">Nombre</dt>
+                    <dd class="col-sm-8">{{ proveedor.nombre }}</dd>
+                    <dt class="col-sm-4">Email</dt>
+                    <dd class="col-sm-8">{{ proveedor.email }}</dd>
+                    <dt class="col-sm-4">Teléfono</dt>
+                    <dd class="col-sm-8">{{ proveedor.telefono|default:"-" }}</dd>
+                    <dt class="col-sm-4">Contacto</dt>
+                    <dd class="col-sm-8">{{ proveedor.contacto|default:"-" }}</dd>
+                    {% if proveedor.notas %}
+                    <dt class="col-sm-4">Notas</dt>
+                    <dd class="col-sm-8">{{ proveedor.notas }}</dd>
+                    {% endif %}
+                </dl>
+            </div>
+            <div class="card-footer">
+                <a href="{% url 'proveedores:proveedor_edit' proveedor.pk %}" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-pencil"></i> Editar
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">Vinos suministrados</div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr><th>Vino</th><th>Precio</th><th>Principal</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for vp in proveedor.vinos.all %}
+                        <tr>
+                            <td>{{ vp.vino }}</td>
+                            <td>{{ vp.precio }}€</td>
+                            <td>{% if vp.es_principal %}<i class="bi bi-star-fill text-warning"></i>{% endif %}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="3" class="text-muted">Sin vinos asignados.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

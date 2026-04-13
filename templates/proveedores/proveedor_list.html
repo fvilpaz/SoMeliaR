@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}Proveedores{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-truck"></i> Proveedores</h2>
+    <a href="{% url 'proveedores:proveedor_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> Nuevo Proveedor
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Email</th>
+                    <th>Contacto</th>
+                    <th>Teléfono</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in proveedores %}
+                <tr>
+                    <td><a href="{% url 'proveedores:proveedor_detail' p.pk %}">{{ p.nombre }}</a></td>
+                    <td>{{ p.email }}</td>
+                    <td>{{ p.contacto|default:"-" }}</td>
+                    <td>{{ p.telefono|default:"-" }}</td>
+                    <td>
+                        <a href="{% url 'proveedores:proveedor_edit' p.pk %}" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-muted">No hay proveedores registrados.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

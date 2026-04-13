@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% block title %}Analizar Stock{% endblock %}
+
+{% block content %}
+<h2 class="mb-4"><i class="bi bi-robot"></i> Análisis de Stock (IA)</h2>
+
+{% if bajo_minimo %}
+<div class="alert alert-warning">
+    <strong>Se han detectado {{ bajo_minimo|length }} vino(s) bajo mínimo.</strong>
+    Revisa el análisis y pulsa "Generar Pedidos" para crear borradores automáticos.
+</div>
+
+{% for grupo in grupos %}
+<div class="card mb-3">
+    <div class="card-header">
+        <i class="bi bi-truck"></i> {{ grupo.proveedor.nombre }}
+        <small class="text-muted">({{ grupo.lineas|length }} vinos)</small>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Vino</th>
+                    <th>Stock Actual</th>
+                    <th>Mínimo</th>
+                    <th>Óptimo</th>
+                    <th>Sugerido</th>
+                    <th>Precio</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in grupo.lineas %}
+                <tr>
+                    <td>{{ item.vino }}</td>
+                    <td><strong class="text-danger">{{ item.stock_actual }}</strong></td>
+                    <td>{{ item.stock_minimo }}</td>
+                    <td>{{ item.stock_optimo }}</td>
+                    <td><strong>{{ item.cantidad_sugerida }}</strong></td>
+                    <td>{{ item.precio }}€</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endfor %}
+
+{% if sin_proveedor %}
+<div class="alert alert-danger">
+    <strong>Vinos sin proveedor asignado:</strong>
+    <ul class="mb-0 mt-2">
+        {% for item in sin_proveedor %}
+        <li>{{ item.vino }} (stock: {{ item.stock_actual }}, mín: {{ item.stock_minimo }})</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+<form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-lg btn-warning">
+        <i class="bi bi-robot"></i> Generar Pedidos Borrador
+    </button>
+    <a href="{% url 'core:dashboard' %}" class="btn btn-lg btn-outline-secondary">Cancelar</a>
+</form>
+
+{% else %}
+<div class="alert alert-success">
+    <i class="bi bi-check-circle"></i> <strong>¡Todo en orden!</strong> No hay vinos bajo mínimo.
+</div>
+<a href="{% url 'core:dashboard' %}" class="btn btn-outline-primary">Volver al Dashboard</a>
+{% endif %}
+{% endblock %}

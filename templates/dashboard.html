@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<h2 class="mb-4"><i class="bi bi-speedometer2"></i> Dashboard de Bodega</h2>
+
+<!-- Resumen rápido -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-bg-primary">
+            <div class="card-body">
+                <h5 class="card-title">Vinos Activos</h5>
+                <p class="display-6">{{ total_vinos }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-bg-danger">
+            <div class="card-body">
+                <h5 class="card-title">Bajo Mínimo</h5>
+                <p class="display-6">{{ alertas|length }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-bg-warning">
+            <div class="card-body">
+                <h5 class="card-title">Pedidos Pendientes</h5>
+                <p class="display-6">{{ pedidos_pendientes }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-bg-success">
+            <div class="card-body">
+                <h5 class="card-title">Familias</h5>
+                <p class="display-6">{{ familias|length }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Gráfico de stock por familia -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">Stock por Familia</div>
+            <div class="card-body">
+                <canvas id="stockChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Familias -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">Familias de Vino</div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Familia</th>
+                            <th>Vinos</th>
+                            <th>Stock Total</th>
+                            <th>Bajo Mínimo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for f in familias %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'bodega:vino_list' %}?familia={{ f.codigo }}">
+                                    {{ f.nombre }}
+                                </a>
+                            </td>
+                            <td>{{ f.count }}</td>
+                            <td>{{ f.stock_total }} uds.</td>
+                            <td>
+                                {% if f.bajo_minimo > 0 %}
+                                <span class="badge bg-danger">{{ f.bajo_minimo }}</span>
+                                {% else %}
+                                <span class="badge bg-success">OK</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4" class="text-muted">No hay vinos registrados.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Alertas -->
+{% if alertas %}
+<div class="card border-danger mb-4">
+    <div class="card-header bg-danger text-white">
+        <i class="bi bi-exclamation-triangle"></i> Vinos Bajo Mínimo
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Vino</th>
+                    <th>Stock Actual</th>
+                    <th>Stock Mínimo</th>
+                    <th>Faltan</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for a in alertas %}
+                <tr>
+                    <td><a href="{% url 'bodega:vino_detail' a.vino.pk %}">{{ a.vino }}</a></td>
+                    <td><strong class="text-danger">{{ a.stock_actual }}</strong></td>
+                    <td>{{ a.stock_minimo }}</td>
+                    <td>{{ a.stock_minimo|add:"-"|add:a.stock_actual }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="card-footer">
+        <a href="{% url 'pedidos:analizar_stock' %}" class="btn btn-danger">
+            <i class="bi bi-robot"></i> Generar Pedidos con IA
+        </a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const ctx = document.getElementById('stockChart');
+if (ctx) {
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: {{ chart_labels|safe }},
+            datasets: [{
+                data: {{ chart_data|safe }},
+                backgroundColor: [
+                    '#ffc107', '#dc3545', '#fd7e14', '#198754',
+                    '#0d6efd', '#6f42c1'
+                ],
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+}
+</script>
+{% endblock %}
