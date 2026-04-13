@@ -9,7 +9,7 @@ if os.environ.get("DEBUG", "True") == "False":
     django.setup()
     from django.core.management import call_command
     call_command("migrate", "--no-input")
-    call_command("collectstatic", "--no-input", "--clear")
+    call_command("collectstatic", "--no-input")
     # Cargar datos iniciales si la base de datos está vacía
     try:
         from bodega.models import Vino
