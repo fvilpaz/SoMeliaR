@@ -1,7 +1,7 @@
 __pycache__/
 *.pyc
 *.pyo
-db.sqlite3
+# db.sqlite3  # incluida en el repo para despliegue inicial
 .env
 *.egg-info/
 dist/
