@@ -1,16 +1,11 @@
-import json
 from decimal import Decimal
 
-from django.http import JsonResponse
 from django.shortcuts import render
 from django.db.models import Sum, DecimalField, Value
 from django.db.models.functions import Coalesce
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST
 
 from bodega.models import Vino, StockConfig
 from pedidos.models import Pedido
-from .services import interpretar_comando, ejecutar_comando
 
 
 def dashboard(request):
@@ -78,28 +73,3 @@ def dashboard(request):
     return render(request, "dashboard.html", context)
 
 
-def asistente(request):
-    """Página del asistente de voz."""
-    return render(request, "asistente.html")
-
-
-@csrf_exempt
-@require_POST
-def asistente_api(request):
-    """API que recibe texto transcrito y ejecuta la acción."""
-    try:
-        data = json.loads(request.body)
-    except json.JSONDecodeError:
-        return JsonResponse({"ok": False, "mensaje": "JSON inválido"}, status=400)
-
-    texto = data.get("texto", "").strip()
-    if not texto:
-        return JsonResponse({"ok": False, "mensaje": "No hay texto"}, status=400)
-
-    # 1. Interpretar con Gemini
-    comando = interpretar_comando(texto)
-
-    # 2. Ejecutar la acción
-    resultado = ejecutar_comando(comando)
-
-    return JsonResponse(resultado)
