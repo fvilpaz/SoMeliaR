@@ -84,23 +84,10 @@ body {
     gap: 0.75rem;
   }
 
-  .topbar {
-    height: auto;
-    min-height: 72px;
-    padding: 0.6rem 1rem;
-  }
-
-  .topbar-avatar {
-    width: 70px;
-    height: 70px;
-    border: 2px solid rgba(255, 255, 255, 0.4);
-  }
-
   .app-wrapper {
-    padding-top: 72px;
+    padding-top: var(--topbar-height);
   }
 
-  /* Offcanvas sidebar: más ancho y logo más grande */
   #sidebar {
     --bs-offcanvas-width: min(85vw, 320px);
   }
