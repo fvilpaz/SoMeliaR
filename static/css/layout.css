@@ -7,12 +7,12 @@
    VARIABLES
    ================================================== */
 :root {
-  --sidebar-width:      270px;
-  --topbar-height:       56px;
-  --sidebar-bg:        #212529;
-  --sidebar-border:    rgba(255, 255, 255, 0.1);
-  --link-hover-bg:     rgba(255, 255, 255, 0.1);
-  --link-active-bg:    rgba(255, 255, 255, 0.18);
+  --sidebar-width: 270px;
+  --topbar-height: 56px;
+  --sidebar-bg: #212529;
+  --sidebar-border: rgba(255, 255, 255, 0.1);
+  --link-hover-bg: rgba(255, 255, 255, 0.1);
+  --link-active-bg: rgba(255, 255, 255, 0.18);
   --link-success-hover: rgba(25, 135, 84, 0.18);
   --link-warning-hover: rgba(255, 193, 7, 0.18);
 }
@@ -29,14 +29,16 @@ body {
    ================================================== */
 .topbar {
   position: fixed;
-  inset: 0 0 auto 0;          /* top/left/right = 0 */
+  inset: 0 0 auto 0;
+  /* top/left/right = 0 */
   height: var(--topbar-height);
   background: var(--sidebar-bg);
   display: flex;
   align-items: center;
   padding: 0 1rem;
   gap: 0.75rem;
-  z-index: 1040;              /* por encima de offcanvas backdrop */
+  z-index: 1040;
+  /* por encima de offcanvas backdrop */
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
 }
 
@@ -50,7 +52,10 @@ body {
   cursor: pointer;
   transition: opacity 0.15s;
 }
-.topbar-toggle:hover { opacity: 0.75; }
+
+.topbar-toggle:hover {
+  opacity: 0.75;
+}
 
 .topbar-brand {
   color: #fff;
@@ -71,28 +76,34 @@ body {
 
 /* Portrait: topbar + offcanvas más grandes */
 @media (max-width: 991.98px) and (orientation: portrait) {
+
   /* Topbar */
   .topbar {
     height: auto;
     padding: 0.65rem 1rem;
     gap: 0.75rem;
   }
+
   .topbar-avatar {
     width: 52px;
     height: 52px;
-    border: 2px solid rgba(255,255,255,0.4);
+    border: 2px solid rgba(255, 255, 255, 0.4);
   }
+
   .app-wrapper {
     padding-top: 70px;
   }
+
   /* Offcanvas sidebar: más ancho y logo más grande */
   #sidebar {
     --bs-offcanvas-width: min(85vw, 320px);
   }
+
   .sidebar-logo-sm {
     width: 60px;
     height: 60px;
   }
+
   .offcanvas-header {
     padding: 1.25rem 1rem;
     gap: 0.85rem;
@@ -134,7 +145,8 @@ body {
 /* Desktop (≥ lg): Bootstrap resetea offcanvas — restauramos estilos */
 @media (min-width: 992px) {
   #sidebar {
-    background-color: var(--sidebar-bg) !important; /* Bootstrap pone transparent */
+    background-color: var(--sidebar-bg) !important;
+    /* Bootstrap pone transparent */
     width: var(--sidebar-width);
     flex-shrink: 0;
     position: sticky;
@@ -159,11 +171,19 @@ body {
 
 /* Logo grande (desktop) */
 .sidebar-logo {
-  width: 108px;
-  height: 108px;
+  width: 200px;
+  height: 200px;
   object-fit: cover;
-  border-radius: 50%;
+  border-radius: 12%;
   border: 3px solid rgba(255, 255, 255, 0.25);
+}
+
+/* Logo en laptop pequeño */
+@media (min-width: 992px) and (max-width: 1399.98px) {
+  .sidebar-logo {
+    width: 160px;
+    height: 160px;
+  }
 }
 
 /* Logo pequeño (cabecera del drawer móvil) */
@@ -185,7 +205,8 @@ body {
    NAV LINKS DEL SIDEBAR
    ================================================== */
 #sidebar .sidebar-link {
-  display: flex;              /* icono + texto siempre en línea */
+  display: flex;
+  /* icono + texto siempre en línea */
   align-items: center;
   gap: 0.65rem;
   padding: 0.58rem 0.85rem;
@@ -213,6 +234,7 @@ body {
 #sidebar .sidebar-link--success:hover {
   background-color: var(--link-success-hover);
 }
+
 #sidebar .sidebar-link--warning:hover {
   background-color: var(--link-warning-hover);
 }
@@ -224,8 +246,13 @@ body {
 }
 
 /* Colores de texto */
-#sidebar .sidebar-link--success { color: #20c997 !important; }
-#sidebar .sidebar-link--warning { color: #ffc107 !important; }
+#sidebar .sidebar-link--success {
+  color: #20c997 !important;
+}
+
+#sidebar .sidebar-link--warning {
+  color: #ffc107 !important;
+}
 
 /* Separadores de secciones */
 .sidebar-divider {
@@ -247,15 +274,21 @@ body {
 
 /* Sm+: más aire */
 @media (min-width: 480px) {
-  .app-main { padding: 1.25rem; }
+  .app-main {
+    padding: 1.25rem;
+  }
 }
 
 @media (min-width: 576px) {
-  .app-main { padding: 1.5rem; }
+  .app-main {
+    padding: 1.5rem;
+  }
 }
 
 @media (min-width: 992px) {
-  .app-main { padding: 2rem; }
+  .app-main {
+    padding: 2rem;
+  }
 }
 
 /* ==================================================
@@ -267,21 +300,56 @@ body {
 }
 
 /* ==================================================
-   TIPOGRAFÍA
+   ENLACES EN CONTENIDO — sin subrayado ni cambio de color
    ================================================== */
-.display-6 { font-weight: 600; }
+.app-main a:not(.btn):not(.nav-link):not(.breadcrumb-item a) {
+  color: inherit;
+  text-decoration: none;
+}
+.app-main a:not(.btn):not(.nav-link):not(.breadcrumb-item a):hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
 
 /* ==================================================
-   TABLAS EN PANTALLAS PEQUEÑAS
-   Bootstrap ya provee .table-responsive pero añadimos
-   soporte automático para las tablas dentro de .card
+   TIPOGRAFÍA
    ================================================== */
-@media (max-width: 575.98px) {
-  .card .table-hover {
-    display: block;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
+.display-6 {
+  font-weight: 600;
+}
+
+/* ==================================================
+   TABLAS — scroll horizontal dentro de la card,
+   nunca mueve la página entera
+   ================================================== */
+.card-body.p-0 {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ==================================================
+   LAPTOP PEQUEÑO (Lenovo ~1366px)
+   ================================================== */
+@media (min-width: 992px) and (max-width: 1399.98px) {
+  :root { --sidebar-width: 240px; }
+  .app-main { padding: 1.5rem; }
+}
+
+/* ==================================================
+   PANTALLA GRANDE (≥ 1400px)
+   ================================================== */
+@media (min-width: 1400px) {
+  :root { --sidebar-width: 280px; }
+  .app-main { padding: 2.5rem; }
+}
+
+/* ==================================================
+   MÓVIL MUY PEQUEÑO (< 400px)
+   ================================================== */
+@media (max-width: 399.98px) {
+  h2 { font-size: 1.25rem; }
+  .display-6 { font-size: 1.5rem !important; }
+  .card-body { padding: 0.75rem; }
 }
 
 /* ==================================================
@@ -292,9 +360,11 @@ body {
   .app-main {
     padding: 1rem;
   }
+
   .topbar {
     height: 48px;
   }
+
   .app-wrapper {
     padding-top: 48px;
   }

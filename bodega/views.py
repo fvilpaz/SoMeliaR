@@ -5,12 +5,14 @@ from django.db.models import Sum, DecimalField, Value
 from django.db.models.functions import Coalesce
 from django.shortcuts import render, get_object_or_404, redirect
 
+from django.db.models import Q
 from .models import Vino, Movimiento
 from .forms import MovimientoForm
 
 
 def vino_list(request):
     familia = request.GET.get("familia", "")
+    busqueda = request.GET.get("q", "").strip()
     vinos = (
         Vino.objects
         .filter(activo=True)
@@ -25,12 +27,19 @@ def vino_list(request):
     )
     if familia:
         vinos = vinos.filter(familia=familia)
+    if busqueda:
+        vinos = vinos.filter(
+            Q(nombre__icontains=busqueda) |
+            Q(bodega_nombre__icontains=busqueda) |
+            Q(denominacion_origen__icontains=busqueda)
+        )
 
     familias = Vino.Familia.choices
     context = {
         "vinos": vinos,
         "familias": familias,
         "familia_actual": familia,
+        "busqueda": busqueda,
     }
     return render(request, "bodega/vino_list.html", context)
 

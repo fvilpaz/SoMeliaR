@@ -59,6 +59,8 @@ def dashboard(request):
         estado__in=[Pedido.Estado.BORRADOR, Pedido.Estado.PENDIENTE]
     ).count()
 
+    valor_inventario = sum(v.stock_anotado * v.precio_coste for v in vinos)
+
     chart_labels = [f["nombre"] for f in familias]
     chart_data = [float(f["stock_total"]) for f in familias]
 
@@ -69,6 +71,7 @@ def dashboard(request):
         "chart_labels": chart_labels,
         "chart_data": chart_data,
         "total_vinos": len(vinos),
+        "valor_inventario": valor_inventario,
     }
     return render(request, "dashboard.html", context)
 

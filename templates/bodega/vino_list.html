@@ -7,6 +7,23 @@
     <h2><i class="bi bi-grid"></i> Bodega</h2>
 </div>
 
+<!-- Buscador -->
+<form method="get" class="mb-3">
+    {% if familia_actual %}
+    <input type="hidden" name="familia" value="{{ familia_actual }}">
+    {% endif %}
+    <div class="input-group">
+        <span class="input-group-text"><i class="bi bi-search"></i></span>
+        <input type="text" name="q" value="{{ busqueda }}" class="form-control"
+               placeholder="Buscar por nombre, bodega o D.O.…" autocomplete="off">
+        {% if busqueda %}
+        <a href="?{% if familia_actual %}familia={{ familia_actual }}{% endif %}" class="btn btn-outline-secondary">
+            <i class="bi bi-x"></i>
+        </a>
+        {% endif %}
+    </div>
+</form>
+
 <!-- Filtro por familia -->
 <div class="d-flex flex-wrap gap-2 mb-4">
     <a href="{% url 'bodega:vino_list' %}" class="btn btn-sm {% if not familia_actual %}btn-dark{% else %}btn-outline-dark{% endif %}">

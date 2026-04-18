@@ -98,6 +98,15 @@ def pedido_detail(request, pk):
     return render(request, "pedidos/pedido_detail.html", context)
 
 
+def pedido_recibir(request, pk):
+    pedido = get_object_or_404(Pedido, pk=pk)
+    if request.method == "POST" and pedido.estado == Pedido.Estado.ENVIADO:
+        pedido.estado = Pedido.Estado.RECIBIDO
+        pedido.save()
+        messages.success(request, f"Pedido #{pedido.pk} marcado como recibido.")
+    return redirect("pedidos:pedido_detail", pk=pedido.pk)
+
+
 def pedido_enviar(request, pk):
     """Envía el pedido por email al proveedor."""
     pedido = get_object_or_404(Pedido, pk=pk)

@@ -31,11 +31,11 @@
                 <span class="badge bg-warning text-dark"><i class="bi bi-robot"></i> Generado por IA</span>
                 {% endif %}
             </div>
-            <div class="card-body p-0">
+            <div class="card-body p-0" style="min-width:0">
                 {% if pedido.estado == 'borrador' %}
                 <form method="post">
                     {% csrf_token %}
-                    <table class="table table-hover mb-0">
+                    <table class="table table-hover mb-0" style="min-width:500px">
                         <thead>
                             <tr>
                                 <th>Vino</th>
@@ -68,7 +68,7 @@
                     </div>
                 </form>
                 {% else %}
-                <table class="table table-hover mb-0">
+                <table class="table table-hover mb-0" style="min-width:500px">
                     <thead>
                         <tr>
                             <th>Vino</th>
@@ -116,8 +116,18 @@
                     </button>
                 </form>
                 {% elif pedido.estado == 'enviado' %}
-                <div class="alert alert-success mb-0">
+                <div class="alert alert-success mb-2">
                     <i class="bi bi-check-circle"></i> Pedido enviado
+                </div>
+                <form method="post" action="{% url 'pedidos:pedido_recibir' pedido.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-box-arrow-in-down"></i> Marcar como Recibido
+                    </button>
+                </form>
+                {% elif pedido.estado == 'recibido' %}
+                <div class="alert alert-primary mb-0">
+                    <i class="bi bi-box-arrow-in-down"></i> Pedido recibido
                 </div>
                 {% endif %}
             </div>
