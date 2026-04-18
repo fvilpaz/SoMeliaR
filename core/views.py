@@ -4,8 +4,12 @@ from django.shortcuts import render
 from django.db.models import Sum, DecimalField, Value
 from django.db.models.functions import Coalesce
 
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+
 from bodega.models import Vino, StockConfig
 from pedidos.models import Pedido
+from .models import Anotacion
 
 
 def dashboard(request):
@@ -74,5 +78,30 @@ def dashboard(request):
         "valor_inventario": valor_inventario,
     }
     return render(request, "dashboard.html", context)
+
+
+def anotaciones(request):
+    if request.method == "POST":
+        texto = request.POST.get("texto", "").strip()
+        prioridad = request.POST.get("prioridad", Anotacion.Prioridad.NORMAL)
+        if texto:
+            Anotacion.objects.create(texto=texto, prioridad=prioridad)
+        return redirect("core:anotaciones")
+
+    lista = Anotacion.objects.filter(resuelta=False)
+    resueltas = Anotacion.objects.filter(resuelta=True)[:10]
+    return render(request, "anotaciones.html", {"lista": lista, "resueltas": resueltas})
+
+
+@require_POST
+def anotacion_resolver(request, pk):
+    Anotacion.objects.filter(pk=pk).update(resuelta=True)
+    return JsonResponse({"ok": True})
+
+
+@require_POST
+def anotacion_eliminar(request, pk):
+    Anotacion.objects.filter(pk=pk).delete()
+    return JsonResponse({"ok": True})
 
 

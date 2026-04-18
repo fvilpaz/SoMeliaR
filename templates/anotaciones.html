@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+{% block title %}Anotaciones{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8 col-lg-6">
+
+    <h2 class="mb-4"><i class="bi bi-journal-text text-info"></i> Anotaciones</h2>
+
+    <!-- Formulario nueva anotación -->
+    <div class="card shadow-sm mb-4">
+      <div class="card-body p-4">
+        <form method="post" id="form-anotacion" autocomplete="off">
+          {% csrf_token %}
+
+          <div class="mb-3">
+            <div class="input-group">
+              <textarea name="texto" id="texto-input" class="form-control"
+                        rows="2" placeholder="Escribe una anotación o usa el micrófono…" required></textarea>
+              <button type="button" id="btn-mic" class="btn btn-outline-secondary" title="Dictar">
+                <i class="bi bi-mic-fill"></i>
+              </button>
+            </div>
+            <div id="mic-status" class="form-text d-none text-danger">Escuchando…</div>
+          </div>
+
+          <div class="d-flex gap-2 align-items-center flex-wrap">
+            <span class="text-muted small">Prioridad:</span>
+            <div class="btn-group btn-group-sm">
+              <input type="radio" class="btn-check" name="prioridad" id="p-urgente" value="urgente">
+              <label class="btn btn-outline-danger" for="p-urgente">🔴 Urgente</label>
+
+              <input type="radio" class="btn-check" name="prioridad" id="p-moderado" value="moderado">
+              <label class="btn btn-outline-warning" for="p-moderado">🟡 Moderado</label>
+
+              <input type="radio" class="btn-check" name="prioridad" id="p-normal" value="normal" checked>
+              <label class="btn btn-outline-success" for="p-normal">🟢 Normal</label>
+            </div>
+            <button type="submit" class="btn btn-primary btn-sm ms-auto">
+              <i class="bi bi-plus-circle"></i> Añadir
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Lista de anotaciones activas -->
+    {% if lista %}
+    <div id="lista-anotaciones">
+      {% for a in lista %}
+      <div class="card mb-2 border-start border-4
+        {% if a.prioridad == 'urgente' %}border-danger
+        {% elif a.prioridad == 'moderado' %}border-warning
+        {% else %}border-success{% endif %}"
+           id="nota-{{ a.pk }}">
+        <div class="card-body py-2 px-3 d-flex align-items-start gap-2">
+          <span class="mt-1">
+            {% if a.prioridad == 'urgente' %}🔴
+            {% elif a.prioridad == 'moderado' %}🟡
+            {% else %}🟢{% endif %}
+          </span>
+          <div class="flex-grow-1">
+            <p class="mb-0">{{ a.texto }}</p>
+            <small class="text-muted">{{ a.fecha|date:"d/m/Y H:i" }}</small>
+          </div>
+          <div class="d-flex gap-1 flex-shrink-0">
+            <button class="btn btn-sm btn-outline-success btn-resolver" data-pk="{{ a.pk }}" title="Marcar resuelta">
+              <i class="bi bi-check-lg"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-danger btn-eliminar" data-pk="{{ a.pk }}" title="Eliminar">
+              <i class="bi bi-trash"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-muted text-center py-4">No hay anotaciones pendientes.</p>
+    {% endif %}
+
+    <!-- Resueltas recientes -->
+    {% if resueltas %}
+    <div class="mt-4">
+      <p class="text-muted small mb-2"><i class="bi bi-check-circle"></i> Resueltas recientemente</p>
+      {% for a in resueltas %}
+      <div class="card mb-1 opacity-50">
+        <div class="card-body py-2 px-3 d-flex align-items-center gap-2">
+          <i class="bi bi-check-circle-fill text-success flex-shrink-0"></i>
+          <div class="flex-grow-1">
+            <p class="mb-0 text-decoration-line-through small">{{ a.texto }}</p>
+            <small class="text-muted">{{ a.fecha|date:"d/m/Y H:i" }}</small>
+          </div>
+          <button class="btn btn-sm btn-outline-danger btn-eliminar" data-pk="{{ a.pk }}">
+            <i class="bi bi-trash"></i>
+          </button>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const textarea  = document.getElementById('texto-input');
+const btnMic    = document.getElementById('btn-mic');
+const micStatus = document.getElementById('mic-status');
+const CSRF      = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+// ── Web Speech API ──────────────────────────────────────────────
+let recognition = null;
+if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SR();
+  recognition.lang = 'es-ES';
+  recognition.continuous = false;
+  recognition.interimResults = false;
+
+  recognition.onstart = () => {
+    btnMic.classList.replace('btn-outline-secondary', 'btn-danger');
+    micStatus.classList.remove('d-none');
+  };
+  recognition.onend = () => {
+    btnMic.classList.replace('btn-danger', 'btn-outline-secondary');
+    micStatus.classList.add('d-none');
+  };
+  recognition.onresult = (e) => {
+    textarea.value = (textarea.value + ' ' + e.results[0][0].transcript).trim();
+  };
+  recognition.onerror = () => {
+    micStatus.textContent = 'Error de micrófono';
+    micStatus.classList.remove('d-none');
+  };
+} else {
+  btnMic.disabled = true;
+  btnMic.title = 'Tu navegador no soporta dictado';
+}
+
+btnMic.addEventListener('click', () => {
+  if (!recognition) return;
+  recognition.start();
+});
+
+// ── Resolver / Eliminar sin recargar ────────────────────────────
+document.addEventListener('click', async (e) => {
+  const btnR = e.target.closest('.btn-resolver');
+  const btnE = e.target.closest('.btn-eliminar');
+
+  if (btnR) {
+    const pk   = btnR.dataset.pk;
+    const card = document.getElementById('nota-' + pk);
+    await fetch(`/anotaciones/${pk}/resolver/`, { method: 'POST', headers: {'X-CSRFToken': CSRF} });
+    card && card.remove();
+  }
+
+  if (btnE) {
+    const pk   = btnE.dataset.pk;
+    const card = btnE.closest('.card');
+    await fetch(`/anotaciones/${pk}/eliminar/`, { method: 'POST', headers: {'X-CSRFToken': CSRF} });
+    card && card.remove();
+  }
+});
+</script>
+{% endblock %}
