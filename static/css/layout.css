@@ -117,12 +117,15 @@ body {
     gap: 0.3rem;
   }
 
-  /* El cuerpo del drawer DEBE hacer scroll para que los links sean accesibles */
-  #sidebar .offcanvas-body,
-  #sidebar .sidebar-body {
+  /* Todo el drawer scrollea como un bloque — logo sube, nav aparece */
+  #sidebar {
     overflow-y: auto !important;
     -webkit-overflow-scrolling: touch;
-    flex: 1 1 auto;
+  }
+
+  #sidebar .offcanvas-body,
+  #sidebar .sidebar-body {
+    overflow-y: visible !important;
   }
 }
 
