@@ -98,10 +98,31 @@ body {
   }
 }
 
-/* Landscape: ocultar foto, topbar compacto */
+/* Landscape: topbar compacto + sidebar scrollable */
 @media (max-width: 991.98px) and (orientation: landscape) {
   .topbar-avatar {
     display: none;
+  }
+
+  /* Ocultar el logo grande en landscape para ganar espacio vertical */
+  .sidebar-logo-sm {
+    width: 80px;
+    height: 80px;
+    margin-top: 0.5rem;
+  }
+
+  /* Cabecera del drawer más compacta */
+  .offcanvas-header {
+    padding: 0.5rem 1rem !important;
+    gap: 0.3rem;
+  }
+
+  /* El cuerpo del drawer DEBE hacer scroll para que los links sean accesibles */
+  #sidebar .offcanvas-body,
+  #sidebar .sidebar-body {
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    flex: 1 1 auto;
   }
 }
 
