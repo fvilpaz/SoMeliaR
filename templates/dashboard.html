@@ -151,14 +151,23 @@ if (ctx) {
                 data: {{ chart_data|safe }},
                 backgroundColor: [
                     '#ffc107', '#dc3545', '#fd7e14', '#198754',
-                    '#0d6efd', '#6f42c1'
+                    '#0d6efd', '#6f42c1', '#20c997', '#e83e8c',
+                    '#17a2b8', '#6c757d', '#ff6b35', '#2ecc71', '#9b59b6'
                 ],
             }]
         },
         options: {
             responsive: true,
             plugins: {
-                legend: { position: 'bottom' }
+                legend: {
+                    position: 'right',
+                    labels: {
+                        boxWidth: 14,
+                        boxHeight: 14,
+                        padding: 10,
+                        font: { size: 12 }
+                    }
+                }
             }
         }
     });
