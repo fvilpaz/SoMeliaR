@@ -1,11 +1,27 @@
+from decimal import Decimal
+
+from django.db.models import Sum, DecimalField, Value
+from django.db.models.functions import Coalesce
 from django.shortcuts import render, get_object_or_404, redirect
+
 from .models import Vino
 from .forms import MovimientoForm
 
 
 def vino_list(request):
     familia = request.GET.get("familia", "")
-    vinos = Vino.objects.filter(activo=True)
+    vinos = (
+        Vino.objects
+        .filter(activo=True)
+        .select_related("stock_config")
+        .annotate(
+            stock_anotado=Coalesce(
+                Sum("movimientos__cantidad"),
+                Value(Decimal("0")),
+                output_field=DecimalField(),
+            )
+        )
+    )
     if familia:
         vinos = vinos.filter(familia=familia)
 

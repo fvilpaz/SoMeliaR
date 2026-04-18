@@ -15,7 +15,7 @@ class Pedido(models.Model):
     )
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     estado = models.CharField(
-        max_length=20, choices=Estado.choices, default=Estado.BORRADOR
+        max_length=20, choices=Estado.choices, default=Estado.BORRADOR, db_index=True
     )
     generado_por_ia = models.BooleanField(default=False)
     texto_ia = models.TextField("texto generado por IA", blank=True)

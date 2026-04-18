@@ -215,18 +215,23 @@ def _interpretar_local(texto):
     }
     palabras = [p for p in texto_lower.split() if p not in palabras_comunes and len(p) > 1]
 
-    vino_encontrado = None
+    mejor_nombre = None
+    mejor_score = 0
     if palabras:
-        # Buscar vinos que contengan alguna de las palabras
-        mejor_score = 0
-        for vino in Vino.objects.filter(activo=True):
-            nombre_lower = vino.nombre.lower()
+        # Scoring en memoria con el caché de nombres (sin query extra)
+        for nombre in _get_vinos_nombres():
+            nombre_lower = nombre.lower()
             score = sum(1 for p in palabras if p in nombre_lower)
             if score > mejor_score:
                 mejor_score = score
-                vino_encontrado = vino
+                mejor_nombre = nombre
 
-    if vino_encontrado and mejor_score > 0:
+    if mejor_nombre and mejor_score > 0:
+        vino_encontrado = Vino.objects.filter(nombre=mejor_nombre).first()
+    else:
+        vino_encontrado = None
+
+    if vino_encontrado:
         return {
             "tipo": tipo,
             "vino_nombre": vino_encontrado.nombre,

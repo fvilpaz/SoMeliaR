@@ -5,9 +5,12 @@ Si GEMINI_API_KEY está configurada, usa Gemini para redactar pedidos.
 Si no, usa un generador local como fallback.
 """
 import logging
+from decimal import Decimal
 from datetime import datetime
 
 from django.conf import settings
+from django.db.models import Sum, DecimalField, Value
+from django.db.models.functions import Coalesce
 
 from bodega.models import Vino, StockConfig
 from proveedores.models import VinoProveedor
@@ -17,26 +20,47 @@ logger = logging.getLogger(__name__)
 
 def obtener_vinos_bajo_minimo():
     """Devuelve lista de dicts con vinos cuyo stock está bajo el mínimo."""
-    resultados = []
-    for config in StockConfig.objects.select_related("vino"):
-        vino = config.vino
-        if not vino.activo:
-            continue
-        stock = vino.stock_actual
-        if stock < config.stock_minimo:
-            vp = VinoProveedor.objects.filter(
-                vino=vino, es_principal=True
-            ).select_related("proveedor").first()
-            resultados.append({
-                "vino": vino,
-                "stock_actual": stock,
-                "stock_minimo": config.stock_minimo,
-                "stock_optimo": config.stock_optimo,
-                "cantidad_sugerida": max(0, int((config.stock_optimo - stock).to_integral_value())),
-                "proveedor": vp.proveedor if vp else None,
-                "precio": vp.precio if vp else vino.precio_coste,
-            })
-    return resultados
+    # Una query: configs + vinos + stock calculado
+    configs = list(
+        StockConfig.objects
+        .filter(vino__activo=True)
+        .select_related("vino")
+        .annotate(
+            stock_calculado=Coalesce(
+                Sum("vino__movimientos__cantidad"),
+                Value(Decimal("0")),
+                output_field=DecimalField(),
+            )
+        )
+    )
+
+    bajo_minimo = [c for c in configs if c.stock_calculado < c.stock_minimo]
+    if not bajo_minimo:
+        return []
+
+    # Una sola query para obtener proveedores de todos los vinos afectados
+    vino_ids = [c.vino_id for c in bajo_minimo]
+    vp_map = {
+        vp.vino_id: vp
+        for vp in VinoProveedor.objects.filter(
+            vino_id__in=vino_ids, es_principal=True
+        ).select_related("proveedor")
+    }
+
+    return [
+        {
+            "vino": c.vino,
+            "stock_actual": c.stock_calculado,
+            "stock_minimo": c.stock_minimo,
+            "stock_optimo": c.stock_optimo,
+            "cantidad_sugerida": max(
+                0, int((c.stock_optimo - c.stock_calculado).to_integral_value())
+            ),
+            "proveedor": vp_map[c.vino_id].proveedor if c.vino_id in vp_map else None,
+            "precio": vp_map[c.vino_id].precio if c.vino_id in vp_map else c.vino.precio_coste,
+        }
+        for c in bajo_minimo
+    ]
 
 
 # ---------------------------------------------------------------------------

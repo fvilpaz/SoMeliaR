@@ -51,7 +51,7 @@ class Vino(models.Model):
     en_ene = models.BooleanField("EÑE", default=False)
     en_pool = models.BooleanField("Pool", default=False)
     notas = models.TextField(blank=True)
-    activo = models.BooleanField(default=True)
+    activo = models.BooleanField(default=True, db_index=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
@@ -68,7 +68,8 @@ class Vino(models.Model):
 
     @property
     def stock_actual(self):
-        """Stock calculado a partir de los movimientos."""
+        if hasattr(self, "stock_anotado"):
+            return self.stock_anotado
         total = self.movimientos.aggregate(total=Sum("cantidad"))["total"]
         return total or Decimal("0")
 

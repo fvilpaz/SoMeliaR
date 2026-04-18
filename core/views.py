@@ -1,8 +1,10 @@
 import json
+from decimal import Decimal
 
 from django.http import JsonResponse
 from django.shortcuts import render
-from django.db.models import Sum, Count
+from django.db.models import Sum, DecimalField, Value
+from django.db.models.functions import Coalesce
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
@@ -12,48 +14,58 @@ from .services import interpretar_comando, ejecutar_comando
 
 
 def dashboard(request):
-    vinos = Vino.objects.filter(activo=True)
+    # Una sola query: stock calculado + config de mínimos
+    vinos = list(
+        Vino.objects
+        .filter(activo=True)
+        .select_related("stock_config")
+        .annotate(
+            stock_anotado=Coalesce(
+                Sum("movimientos__cantidad"),
+                Value(Decimal("0")),
+                output_field=DecimalField(),
+            )
+        )
+    )
 
-    # Resumen por familia
+    # Resumen por familia (en Python, sin más queries)
     familias = []
     for codigo, nombre in Vino.Familia.choices:
-        vinos_familia = vinos.filter(familia=codigo)
-        count = vinos_familia.count()
-        if count == 0:
+        vinos_familia = [v for v in vinos if v.familia == codigo]
+        if not vinos_familia:
             continue
-        # Calcular stock total de la familia
-        stock_total = 0
-        bajo_minimo_count = 0
-        for v in vinos_familia:
-            stock_total += v.stock_actual
-            if v.bajo_minimo:
-                bajo_minimo_count += 1
+        stock_total = sum(v.stock_anotado for v in vinos_familia)
+        bajo_minimo_count = sum(
+            1 for v in vinos_familia
+            if hasattr(v, "stock_config") and v.stock_anotado < v.stock_config.stock_minimo
+        )
         familias.append({
             "codigo": codigo,
             "nombre": nombre,
-            "count": count,
+            "count": len(vinos_familia),
             "stock_total": stock_total,
             "bajo_minimo": bajo_minimo_count,
         })
 
-    # Alertas: vinos bajo mínimo
+    # Alertas: vinos bajo mínimo (sin queries adicionales)
     alertas = []
     for v in vinos:
-        if v.bajo_minimo:
-            alertas.append({
-                "vino": v,
-                "stock_actual": v.stock_actual,
-                "stock_minimo": v.stock_config.stock_minimo,
-            })
+        try:
+            if v.stock_anotado < v.stock_config.stock_minimo:
+                alertas.append({
+                    "vino": v,
+                    "stock_actual": v.stock_anotado,
+                    "stock_minimo": v.stock_config.stock_minimo,
+                })
+        except StockConfig.DoesNotExist:
+            pass
 
-    # Pedidos pendientes
     pedidos_pendientes = Pedido.objects.filter(
         estado__in=[Pedido.Estado.BORRADOR, Pedido.Estado.PENDIENTE]
     ).count()
 
-    # Datos para Chart.js
     chart_labels = [f["nombre"] for f in familias]
-    chart_data = [f["stock_total"] for f in familias]
+    chart_data = [float(f["stock_total"]) for f in familias]
 
     context = {
         "familias": familias,
@@ -61,7 +73,7 @@ def dashboard(request):
         "pedidos_pendientes": pedidos_pendientes,
         "chart_labels": chart_labels,
         "chart_data": chart_data,
-        "total_vinos": vinos.count(),
+        "total_vinos": len(vinos),
     }
     return render(request, "dashboard.html", context)
 
