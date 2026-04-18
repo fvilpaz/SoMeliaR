@@ -30,18 +30,14 @@
              tabindex="-1" aria-labelledby="sidebarLabel">
 
             <!-- Cabecera del drawer (sólo visible en móvil) -->
-            <div class="offcanvas-header">
-                <div class="d-flex align-items-center gap-2">
-                    <img src="{% static 'img/logo_cayetano.jpeg' %}" alt="SoMeliaR"
-                         class="sidebar-logo-sm">
-                    <div>
-                        <div class="fw-bold text-white lh-1" id="sidebarLabel">SoMeliaR</div>
-                        <small class="text-secondary">Gestión de Bodega</small>
-                    </div>
-                </div>
-                <button type="button" class="btn-close btn-close-white"
+            <div class="offcanvas-header flex-column align-items-center pt-4 pb-3 position-relative">
+                <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3"
                         data-bs-dismiss="offcanvas" data-bs-target="#sidebar"
                         aria-label="Cerrar"></button>
+                <img src="{% static 'img/logo_cayetano.jpeg' %}" alt="SoMeliaR"
+                     class="sidebar-logo-sm mb-2">
+                <div class="fw-bold text-white fs-5 lh-1" id="sidebarLabel">SoMeliaR</div>
+                <small class="text-secondary">Gestión de Bodega</small>
             </div>
 
             <!-- Cuerpo del sidebar -->
