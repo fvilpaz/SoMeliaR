@@ -1,10 +1,11 @@
 from decimal import Decimal
 
+from django.contrib import messages
 from django.db.models import Sum, DecimalField, Value
 from django.db.models.functions import Coalesce
 from django.shortcuts import render, get_object_or_404, redirect
 
-from .models import Vino
+from .models import Vino, Movimiento
 from .forms import MovimientoForm
 
 
@@ -42,6 +43,40 @@ def vino_detail(request, pk):
         "movimientos": movimientos,
     }
     return render(request, "bodega/vino_detail.html", context)
+
+
+def movimiento_rapido(request):
+    vinos = Vino.objects.filter(activo=True).order_by("nombre")
+
+    if request.method == "POST":
+        vino_id = request.POST.get("vino_id")
+        tipo = request.POST.get("tipo")
+        try:
+            cantidad = Decimal(request.POST.get("cantidad", "1"))
+        except Exception:
+            cantidad = Decimal("1")
+
+        vino = get_object_or_404(Vino, pk=vino_id, activo=True)
+
+        if tipo == Movimiento.Tipo.SALIDA:
+            cantidad_mov = -abs(cantidad)
+        elif tipo == Movimiento.Tipo.ENTRADA:
+            cantidad_mov = abs(cantidad)
+        else:
+            cantidad_mov = cantidad
+
+        Movimiento.objects.create(vino=vino, tipo=tipo, cantidad=cantidad_mov)
+
+        stock_nuevo = vino.stock_actual
+        accion = {"entrada": "Entrada", "salida": "Salida", "ajuste": "Ajuste"}.get(tipo, tipo)
+        messages.success(
+            request,
+            f"{accion} registrada: {abs(cantidad):.0f} × {vino}. Stock actual: {stock_nuevo:.1f} uds."
+        )
+        return redirect("bodega:movimiento_rapido")
+
+    context = {"vinos": vinos}
+    return render(request, "bodega/movimiento_rapido.html", context)
 
 
 def movimiento_create(request, pk):
