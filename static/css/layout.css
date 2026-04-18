@@ -176,11 +176,12 @@ body {
 
 /* Logo en cabecera del drawer móvil */
 .sidebar-logo-sm {
-  width: 200px;
-  height: 200px;
+  width: 180px;
+  height: 180px;
   object-fit: cover;
   border-radius: 12%;
   border: 3px solid rgba(255, 255, 255, 0.25);
+  margin-top: 1.5rem;
 }
 
 /* Marca en desktop */
