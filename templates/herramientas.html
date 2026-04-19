@@ -56,8 +56,8 @@
                     <input type="hidden" name="accion" value="importar">
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Archivo Excel (.xls)</label>
-                        <input type="file" name="excel" accept=".xls" class="form-control" required>
-                        <div class="form-text">Solo formato <code>.xls</code> (Excel 97-2003). No <code>.xlsx</code>.</div>
+                        <input type="file" name="excel" accept=".xls,.xlsx" class="form-control" required>
+                        <div class="form-text">Formatos válidos: <code>.xls</code> y <code>.xlsx</code> — Excel, LibreOffice y OpenOffice.</div>
                     </div>
                     <button type="submit" class="btn btn-success w-100">
                         <i class="bi bi-upload me-1"></i>Importar datos

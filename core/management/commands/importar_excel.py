@@ -2,8 +2,54 @@
 import re
 from decimal import Decimal, InvalidOperation
 
-import xlrd
 from django.core.management.base import BaseCommand
+
+
+def abrir_libro(path):
+    """Abre .xls con xlrd o .xlsx/.ods con openpyxl y devuelve un wrapper uniforme."""
+    if path.endswith(".xls"):
+        import xlrd
+        return XlrdWorkbook(xlrd.open_workbook(path))
+    else:
+        import openpyxl
+        wb = openpyxl.load_workbook(path, data_only=True, read_only=True)
+        return OpenpyxlWorkbook(wb)
+
+
+class XlrdWorkbook:
+    def __init__(self, wb): self._wb = wb
+    def sheet_names(self): return self._wb.sheet_names()
+    def sheet_by_name(self, name): return XlrdSheet(self._wb.sheet_by_name(name))
+
+
+class XlrdSheet:
+    def __init__(self, sh): self._sh = sh
+    @property
+    def nrows(self): return self._sh.nrows
+    @property
+    def ncols(self): return self._sh.ncols
+    def cell_value(self, r, c): return self._sh.cell_value(r, c)
+
+
+class OpenpyxlWorkbook:
+    def __init__(self, wb): self._wb = wb
+    def sheet_names(self): return self._wb.sheetnames
+    def sheet_by_name(self, name): return OpenpyxlSheet(self._wb[name])
+
+
+class OpenpyxlSheet:
+    def __init__(self, ws):
+        self._rows = list(ws.iter_rows(values_only=True))
+    @property
+    def nrows(self): return len(self._rows)
+    @property
+    def ncols(self): return max((len(r) for r in self._rows), default=0)
+    def cell_value(self, r, c):
+        try:
+            v = self._rows[r][c]
+            return v if v is not None else ""
+        except IndexError:
+            return ""
 
 from bodega.models import Movimiento, StockConfig, Vino
 from proveedores.models import Proveedor, VinoProveedor
@@ -91,7 +137,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         path = options["archivo"]
-        wb = xlrd.open_workbook(path)
+        wb = abrir_libro(path)
 
         self.stdout.write("=" * 60)
         self.stdout.write("IMPORTADOR DE LIBRO DE BODEGA")

@@ -151,14 +151,19 @@ def herramientas(request):
         elif accion == "importar":
             archivo = request.FILES.get("excel")
             if not archivo:
-                messages.error(request, "Selecciona un archivo Excel (.xls).")
-                return redirect("core:herramientas")
-            if not archivo.name.endswith(".xls"):
-                messages.error(request, "El archivo debe ser .xls (formato Excel 97-2003).")
+                messages.error(request, "Selecciona un archivo.")
                 return redirect("core:herramientas")
 
-            # Guardar en archivo temporal y lanzar el comando de importación
-            with tempfile.NamedTemporaryFile(suffix=".xls", delete=False) as tmp:
+            nombre = archivo.name.lower()
+            if nombre.endswith(".xlsx"):
+                sufijo = ".xlsx"
+            elif nombre.endswith(".xls"):
+                sufijo = ".xls"
+            else:
+                messages.error(request, "Formato no soportado. Usa .xls o .xlsx (Excel / LibreOffice / OpenOffice).")
+                return redirect("core:herramientas")
+
+            with tempfile.NamedTemporaryFile(suffix=sufijo, delete=False) as tmp:
                 for chunk in archivo.chunks():
                     tmp.write(chunk)
                 tmp_path = tmp.name
