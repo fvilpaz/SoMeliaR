@@ -1,15 +1,20 @@
+import csv
 from decimal import Decimal
 
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.db.models import Sum, DecimalField, Value
 from django.db.models.functions import Coalesce
+from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
+from django.utils import timezone
 
 from django.db.models import Q
-from .models import Vino, Movimiento
-from .forms import MovimientoForm
+from .models import Vino, Movimiento, StockConfig
+from .forms import MovimientoForm, VinoForm
 
 
+@login_required
 def vino_list(request):
     familia = request.GET.get("familia", "")
     busqueda = request.GET.get("q", "").strip()
@@ -44,6 +49,7 @@ def vino_list(request):
     return render(request, "bodega/vino_list.html", context)
 
 
+@login_required
 def vino_detail(request, pk):
     vino = get_object_or_404(Vino, pk=pk)
     movimientos = vino.movimientos.all()[:20]
@@ -54,6 +60,105 @@ def vino_detail(request, pk):
     return render(request, "bodega/vino_detail.html", context)
 
 
+@login_required
+def vino_create(request):
+    if request.method == "POST":
+        form = VinoForm(request.POST)
+        if form.is_valid():
+            vino = form.save()
+            stock_inicial = form.cleaned_data.get("stock_inicial") or Decimal("0")
+            if stock_inicial > 0:
+                Movimiento.objects.create(
+                    vino=vino,
+                    tipo=Movimiento.Tipo.ENTRADA,
+                    cantidad=stock_inicial,
+                    notas="Stock inicial al crear el vino",
+                )
+            messages.success(request, f"Vino «{vino}» creado correctamente.")
+            return redirect("bodega:vino_detail", pk=vino.pk)
+    else:
+        form = VinoForm()
+    return render(request, "bodega/vino_form.html", {"form": form, "titulo": "Nuevo vino"})
+
+
+@login_required
+def vino_edit(request, pk):
+    vino = get_object_or_404(Vino, pk=pk)
+    if request.method == "POST":
+        form = VinoForm(request.POST, instance=vino)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f"Vino «{vino}» actualizado correctamente.")
+            return redirect("bodega:vino_detail", pk=vino.pk)
+    else:
+        form = VinoForm(instance=vino)
+    return render(request, "bodega/vino_form.html", {"form": form, "titulo": f"Editar: {vino}", "vino": vino})
+
+
+@login_required
+def vino_delete(request, pk):
+    vino = get_object_or_404(Vino, pk=pk)
+    if request.method == "POST":
+        nombre = str(vino)
+        vino.activo = False
+        vino.save()
+        messages.success(request, f"Vino «{nombre}» eliminado de la carta.")
+        return redirect("bodega:vino_list")
+    return render(request, "bodega/vino_confirm_delete.html", {"vino": vino})
+
+
+@login_required
+def vino_export_csv(request):
+    vinos = (
+        Vino.objects
+        .filter(activo=True)
+        .select_related("stock_config")
+        .annotate(
+            stock_anotado=Coalesce(
+                Sum("movimientos__cantidad"),
+                Value(Decimal("0")),
+                output_field=DecimalField(),
+            )
+        )
+        .order_by("familia", "nombre")
+    )
+
+    fecha = timezone.now().strftime("%Y%m%d")
+    response = HttpResponse(content_type="text/csv; charset=utf-8")
+    response["Content-Disposition"] = f'attachment; filename="bodega_{fecha}.csv"'
+    response.write("\ufeff")  # BOM para que Excel abra bien con tildes
+
+    writer = csv.writer(response)
+    writer.writerow([
+        "Nombre", "Bodega", "Añada", "Familia", "Tipo/Azúcar",
+        "D.O.", "Variedades", "Precio coste", "Precio carta",
+        "Stock actual", "Stock mínimo", "Stock óptimo",
+        "Copa", "Precio copa", "Coupa", "Cañitas", "EÑE", "Pool", "Notas",
+    ])
+    for v in vinos:
+        try:
+            sc = v.stock_config
+            s_min = sc.stock_minimo
+            s_opt = sc.stock_optimo
+        except StockConfig.DoesNotExist:
+            s_min = s_opt = ""
+        writer.writerow([
+            v.nombre, v.bodega_nombre, v.anada or "",
+            v.get_familia_display(), v.azucar,
+            v.denominacion_origen, v.variedades,
+            v.precio_coste, v.precio_carta,
+            v.stock_anotado, s_min, s_opt,
+            "Sí" if v.es_copa else "No", v.precio_copa if v.es_copa else "",
+            "Sí" if v.via_coupa else "No",
+            "Sí" if v.en_canitas else "No",
+            "Sí" if v.en_ene else "No",
+            "Sí" if v.en_pool else "No",
+            v.notas,
+        ])
+    return response
+
+
+@login_required
 def movimiento_rapido(request):
     vinos = Vino.objects.filter(activo=True).order_by("nombre")
 
@@ -88,6 +193,7 @@ def movimiento_rapido(request):
     return render(request, "bodega/movimiento_rapido.html", context)
 
 
+@login_required
 def movimiento_create(request, pk):
     vino = get_object_or_404(Vino, pk=pk)
     if request.method == "POST":

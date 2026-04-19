@@ -1,0 +1,178 @@
+{% extends 'base.html' %}
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'bodega:vino_list' %}">Bodega</a></li>
+        {% if vino %}<li class="breadcrumb-item"><a href="{% url 'bodega:vino_detail' vino.pk %}">{{ vino }}</a></li>{% endif %}
+        <li class="breadcrumb-item active">{{ titulo }}</li>
+    </ol>
+</nav>
+
+<h4 class="mb-4"><i class="bi bi-plus-circle me-2"></i>{{ titulo }}</h4>
+
+<form method="post" novalidate>
+    {% csrf_token %}
+    <div class="row g-4">
+
+        <!-- Datos principales -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-dark text-white">Datos del vino</div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Nombre <span class="text-danger">*</span></label>
+                            {{ form.nombre }}
+                            {% for e in form.nombre.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+                        </div>
+                        <div class="col-sm-8">
+                            <label class="form-label fw-semibold">Bodega</label>
+                            {{ form.bodega_nombre }}
+                        </div>
+                        <div class="col-sm-4">
+                            <label class="form-label fw-semibold">Añada</label>
+                            {{ form.anada }}
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label fw-semibold">Familia <span class="text-danger">*</span></label>
+                            {{ form.familia }}
+                            {% for e in form.familia.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label fw-semibold">Tipo / Azúcar</label>
+                            {{ form.azucar }}
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label fw-semibold">Denominación de Origen</label>
+                            {{ form.denominacion_origen }}
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label fw-semibold">Variedades de uva</label>
+                            {{ form.variedades }}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Notas</label>
+                            {{ form.notas }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Precios -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-dark text-white">Precios</div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <label class="form-label fw-semibold">Precio coste (€)</label>
+                            {{ form.precio_coste }}
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label fw-semibold">Precio carta (€)</label>
+                            {{ form.precio_carta }}
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check">
+                                {{ form.es_copa }}
+                                <label class="form-check-label" for="{{ form.es_copa.id_for_label }}">
+                                    Se vende por copas
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-sm-6" id="precio-copa-wrap">
+                            <label class="form-label fw-semibold">Precio copa (€)</label>
+                            {{ form.precio_copa }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar derecho -->
+        <div class="col-lg-4">
+
+            <!-- Stock -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-dark text-white">Stock</div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        {% if not vino %}
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">{{ form.stock_inicial.label }}</label>
+                            {{ form.stock_inicial }}
+                            <div class="form-text">{{ form.stock_inicial.help_text }}</div>
+                        </div>
+                        {% endif %}
+                        <div class="col-6">
+                            <label class="form-label fw-semibold">{{ form.stock_minimo.label }}</label>
+                            {{ form.stock_minimo }}
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-semibold">{{ form.stock_optimo.label }}</label>
+                            {{ form.stock_optimo }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ubicación y canal -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-dark text-white">Ubicación y canal</div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <div class="form-check">
+                            {{ form.en_canitas }}
+                            <label class="form-check-label" for="{{ form.en_canitas.id_for_label }}">Cañitas</label>
+                        </div>
+                        <div class="form-check">
+                            {{ form.en_ene }}
+                            <label class="form-check-label" for="{{ form.en_ene.id_for_label }}">EÑE</label>
+                        </div>
+                        <div class="form-check">
+                            {{ form.en_pool }}
+                            <label class="form-check-label" for="{{ form.en_pool.id_for_label }}">Pool</label>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="form-check">
+                        {{ form.via_coupa }}
+                        <label class="form-check-label" for="{{ form.via_coupa.id_for_label }}">Se pide por Coupa</label>
+                    </div>
+                    <hr>
+                    <div class="form-check">
+                        {{ form.activo }}
+                        <label class="form-check-label" for="{{ form.activo.id_for_label }}">Activo en carta</label>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="d-flex gap-2 mt-2 mb-4">
+        <button type="submit" class="btn btn-dark px-4">
+            <i class="bi bi-check-lg me-1"></i>Guardar
+        </button>
+        {% if vino %}
+        <a href="{% url 'bodega:vino_detail' vino.pk %}" class="btn btn-outline-secondary">Cancelar</a>
+        {% else %}
+        <a href="{% url 'bodega:vino_list' %}" class="btn btn-outline-secondary">Cancelar</a>
+        {% endif %}
+    </div>
+</form>
+
+{% block extra_js %}
+<script>
+    // Mostrar/ocultar precio copa
+    const esCopa = document.getElementById('{{ form.es_copa.id_for_label }}');
+    const precioCopaWrap = document.getElementById('precio-copa-wrap');
+    function toggleCopa() {
+        precioCopaWrap.style.display = esCopa.checked ? '' : 'none';
+    }
+    esCopa.addEventListener('change', toggleCopa);
+    toggleCopa();
+</script>
+{% endblock %}
+{% endblock %}

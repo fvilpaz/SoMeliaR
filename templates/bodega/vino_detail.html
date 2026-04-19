@@ -3,12 +3,22 @@
 {% block title %}{{ vino }}{% endblock %}
 
 {% block content %}
-<nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{% url 'bodega:vino_list' %}">Bodega</a></li>
-        <li class="breadcrumb-item active">{{ vino }}</li>
-    </ol>
-</nav>
+<div class="d-flex justify-content-between align-items-start mb-3">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'bodega:vino_list' %}">Bodega</a></li>
+            <li class="breadcrumb-item active">{{ vino }}</li>
+        </ol>
+    </nav>
+    <div class="d-flex gap-2">
+        <a href="{% url 'bodega:vino_edit' vino.pk %}" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-pencil me-1"></i>Editar
+        </a>
+        <a href="{% url 'bodega:vino_delete' vino.pk %}" class="btn btn-sm btn-outline-danger">
+            <i class="bi bi-trash3 me-1"></i>Eliminar
+        </a>
+    </div>
+</div>
 
 <div class="row">
     <div class="col-md-6">

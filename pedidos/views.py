@@ -1,17 +1,19 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
 from django.core.mail import send_mail
 from django.contrib import messages
-from django.conf import settings
 
 from .models import Pedido, LineaPedido
 from .services import obtener_vinos_bajo_minimo, agrupar_por_proveedor, generar_texto_pedido
 
 
+@login_required
 def pedido_list(request):
     pedidos = Pedido.objects.select_related("proveedor").all()
     return render(request, "pedidos/pedido_list.html", {"pedidos": pedidos})
 
 
+@login_required
 def analizar_stock(request):
     """Analiza el stock, genera pedidos borrador agrupados por proveedor."""
     if request.method == "POST":
@@ -27,7 +29,6 @@ def analizar_stock(request):
             proveedor = grupo["proveedor"]
             lineas_data = grupo["lineas"]
 
-            # Generar texto IA
             texto = generar_texto_pedido(proveedor, lineas_data)
 
             pedido = Pedido.objects.create(
@@ -57,7 +58,6 @@ def analizar_stock(request):
             )
         return redirect("pedidos:pedido_list")
 
-    # GET: mostrar vista previa del análisis
     bajo_minimo = obtener_vinos_bajo_minimo()
     grupos, sin_proveedor = agrupar_por_proveedor(bajo_minimo)
     context = {
@@ -68,12 +68,12 @@ def analizar_stock(request):
     return render(request, "pedidos/analizar_stock.html", context)
 
 
+@login_required
 def pedido_detail(request, pk):
     pedido = get_object_or_404(Pedido.objects.select_related("proveedor"), pk=pk)
     lineas = pedido.lineas.select_related("vino").all()
 
     if request.method == "POST":
-        # Actualizar cantidades finales
         for linea in lineas:
             key = f"cantidad_{linea.pk}"
             if key in request.POST:
@@ -83,7 +83,6 @@ def pedido_detail(request, pk):
                 except (ValueError, TypeError):
                     pass
 
-        # Cambiar estado a pendiente si estaba en borrador
         if pedido.estado == Pedido.Estado.BORRADOR:
             pedido.estado = Pedido.Estado.PENDIENTE
             pedido.save()
@@ -98,6 +97,7 @@ def pedido_detail(request, pk):
     return render(request, "pedidos/pedido_detail.html", context)
 
 
+@login_required
 def pedido_recibir(request, pk):
     pedido = get_object_or_404(Pedido, pk=pk)
     if request.method == "POST" and pedido.estado == Pedido.Estado.ENVIADO:
@@ -107,6 +107,7 @@ def pedido_recibir(request, pk):
     return redirect("pedidos:pedido_detail", pk=pedido.pk)
 
 
+@login_required
 def pedido_enviar(request, pk):
     """Envía el pedido por email al proveedor."""
     pedido = get_object_or_404(Pedido, pk=pk)
@@ -114,7 +115,6 @@ def pedido_enviar(request, pk):
     if request.method == "POST" and pedido.estado in (
         Pedido.Estado.BORRADOR, Pedido.Estado.PENDIENTE
     ):
-        # Regenerar texto con cantidades finales
         lineas = pedido.lineas.select_related("vino").all()
         lineas_data = []
         for linea in lineas:
@@ -126,11 +126,10 @@ def pedido_enviar(request, pk):
 
         texto_final = generar_texto_pedido(pedido.proveedor, lineas_data)
 
-        # Enviar email (en demo sale por consola)
         send_mail(
             subject=f"Pedido de Bodega #{pedido.pk} — SoMeliaR",
             message=texto_final,
-            from_email=settings.DEFAULT_FROM_EMAIL,
+            from_email=request.user.email,
             recipient_list=[pedido.proveedor.email],
         )
 

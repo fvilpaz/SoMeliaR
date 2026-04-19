@@ -98,9 +98,12 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+LOGIN_URL = "login"
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "login"
+
 # Email — en demo sale por consola
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-DEFAULT_FROM_EMAIL = "bodega@someliar.demo"
 
 # IA — Google Gemini
 # Pon tu API key en la variable de entorno GEMINI_API_KEY
