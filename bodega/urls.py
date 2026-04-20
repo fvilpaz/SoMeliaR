@@ -15,4 +15,5 @@ urlpatterns = [
     path("<int:pk>/descripcion/", views.vino_descripcion, name="vino_descripcion"),
     path("etiqueta/crear/", views.etiqueta_crear, name="etiqueta_crear"),
     path("<int:pk>/imagen/", views.vino_imagen_upload, name="vino_imagen_upload"),
+    path("<int:pk>/scan-imagen/", views.vino_scan_imagen, name="vino_scan_imagen"),
 ]

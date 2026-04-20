@@ -119,10 +119,13 @@
                     <a href="{% url 'core:perfil' %}" class="d-flex align-items-center gap-2 mb-2 text-decoration-none"
                         style="min-width:0;">
                         {% if user_perfil and user_perfil.avatar %}
-                        <img src="{{ user_perfil.avatar.url }}" alt="" class="sidebar-user-avatar">
-                        {% else %}
-                        <i class="bi bi-person-circle text-secondary fs-1 flex-shrink-0"></i>
+                        <img src="{{ user_perfil.avatar.url }}" alt="" class="sidebar-user-avatar"
+                             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
                         {% endif %}
+                        <div class="sidebar-user-avatar d-flex align-items-center justify-content-center bg-secondary text-white fw-bold flex-shrink-0"
+                             style="font-size:1.1rem;letter-spacing:-.5px;{% if user_perfil and user_perfil.avatar %}display:none!important;{% endif %}">
+                            {{ request.user.first_name|slice:":1"|upper }}{{ request.user.last_name|slice:":1"|upper }}{% if not request.user.first_name %}{{ request.user.username|slice:":2"|upper }}{% endif %}
+                        </div>
                         <div style="min-width:0;">
                             <div class="text-white small text-truncate lh-1">
                                 {{ request.user.get_full_name|default:request.user.username }}

@@ -170,6 +170,14 @@
                 <a href="{% url 'bodega:vino_detail' vino.pk %}" class="btn btn-sm btn-outline-dark" title="Ver ficha completa e IA">
                     <i class="bi bi-stars"></i>
                 </a>
+                {% if not vino.imagen %}
+                <form method="post" action="{% url 'bodega:vino_scan_imagen' vino.pk %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-outline-info" title="Buscar foto automáticamente">
+                        <i class="bi bi-camera"></i>
+                    </button>
+                </form>
+                {% endif %}
             </div>
         </div>
     </div>
