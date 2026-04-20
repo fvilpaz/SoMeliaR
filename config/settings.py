@@ -3,30 +3,32 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# --- SEGURIDAD ---
-SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-demo-key")
+# En producción: define SECRET_KEY como variable de entorno
+SECRET_KEY = os.environ.get(
+    "SECRET_KEY",
+    "django-insecure-demo-key-change-in-production"
+)
+
+# En producción: DEBUG=False
 DEBUG = os.environ.get("DEBUG", "True") == "True"
 
+# Render añade automáticamente el host en RENDER_EXTERNAL_HOSTNAME
 ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 _render_host = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
 if _render_host:
     ALLOWED_HOSTS.append(_render_host)
 
-# --- CLOUDINARY CONFIG ---
 CLOUDINARY_URL = os.environ.get("CLOUDINARY_URL", "")
 
 INSTALLED_APPS = [
-    # 1. Cloudinary Storage SIEMPRE primero para capturar los archivos
-    "cloudinary_storage",
-    "cloudinary",
-    
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    
+    # Almacenamiento en nube (activado si hay CLOUDINARY_URL)
+    *(["cloudinary", "cloudinary_storage"] if CLOUDINARY_URL else []),
     # Apps propias
     "core",
     "bodega",
@@ -34,10 +36,17 @@ INSTALLED_APPS = [
     "pedidos",
 ]
 
-# --- MIDDLEWARE ---
+# URLs de confianza para CSRF (necesario en producción con HTTPS)
+CSRF_TRUSTED_ORIGINS = [
+    "https://*.onrender.com",
+]
+_render_host = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
+if _render_host:
+    CSRF_TRUSTED_ORIGINS.append(f"https://{_render_host}")
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",  # justo después de Security
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -45,10 +54,6 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
-
-CSRF_TRUSTED_ORIGINS = ["https://*.onrender.com"]
-if _render_host:
-    CSRF_TRUSTED_ORIGINS.append(f"https://{_render_host}")
 
 ROOT_URLCONF = "config.urls"
 
@@ -71,7 +76,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
-# --- BASE DE DATOS ---
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
@@ -79,34 +83,40 @@ DATABASES = {
     }
 }
 
-# --- INTERNACIONALIZACIÓN ---
+AUTH_PASSWORD_VALIDATORS = [
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
+]
+
 LANGUAGE_CODE = "es"
 TIME_ZONE = "Europe/Madrid"
 USE_I18N = True
 USE_TZ = True
 
-# --- ARCHIVOS ESTÁTICOS (CSS, JS) ---
 STATIC_URL = "static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
 
-# --- ARCHIVOS MULTIMEDIA (FOTOS DE PERFIL) ---
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 if CLOUDINARY_URL:
-    # Si detecta la clave en Render, usa Cloudinary
     DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# --- RUTAS DE LOGIN ---
 LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "login"
 
-# --- IA Y OTROS ---
+# Email — en demo sale por consola
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+# IA — Google Gemini
+# Pon tu API key en la variable de entorno GEMINI_API_KEY
+# Si no hay key, el sistema usa un generador local (mock)
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 GEMINI_MODEL = "gemini-2.5-flash"
