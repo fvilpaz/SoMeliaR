@@ -519,6 +519,33 @@ body {
 }
 
 /* ==================================================
+   LOGO PLACEHOLDER (cuando no hay imagen subida)
+   ================================================== */
+.sidebar-logo-placeholder,
+.login-logo-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.04);
+  border: 2px dashed rgba(255, 255, 255, 0.18);
+  line-height: 1;
+  cursor: default;
+  user-select: none;
+}
+
+.sidebar-logo.sidebar-logo-placeholder {
+  font-size: 5rem;
+}
+
+.sidebar-logo-sm.sidebar-logo-placeholder {
+  font-size: 4rem;
+}
+
+.login-logo.login-logo-placeholder {
+  font-size: 5rem;
+}
+
+/* ==================================================
    LOGIN PAGE
    ================================================== */
 .login-body {

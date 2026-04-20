@@ -37,7 +37,7 @@
                 {% if app_config.logo %}
                 <img src="{{ app_config.logo.url }}" alt="SoMeliaR" class="sidebar-logo-sm mb-2">
                 {% else %}
-                <img src="{% static 'img/logo_cayetano.jpeg' %}" alt="SoMeliaR" class="sidebar-logo-sm mb-2">
+                <div class="sidebar-logo-placeholder sidebar-logo-sm mb-2">🍷</div>
                 {% endif %}
                 <div class="fw-bold text-white fs-5 lh-1" id="sidebarLabel">SoMeliaR</div>
                 <small class="text-secondary">Gestión de Bodega</small>
@@ -49,9 +49,11 @@
                 <!-- Marca — sólo en desktop (Bootstrap oculta offcanvas-header en ≥ lg) -->
                 <div class="sidebar-brand d-none d-lg-flex flex-column align-items-center py-4 px-3">
                     {% if app_config.logo %}
-                    <img src="{{ app_config.logo.url }}" alt="SoMeliaR" class="sidebar-logo mb-2">
+                    <img src="{{ app_config.logo.url }}" alt="SoMeliaR" class="sidebar-logo mb-2"
+                         {% if request.user.is_superuser %}title="Cambiar logo en Herramientas"{% endif %}>
                     {% else %}
-                    <img src="{% static 'img/logo_cayetano.jpeg' %}" alt="SoMeliaR" class="sidebar-logo mb-2">
+                    <div class="sidebar-logo-placeholder sidebar-logo mb-2"
+                         {% if request.user.is_superuser %}title="Subir logo en Herramientas"{% endif %}>🍷</div>
                     {% endif %}
                     <div class="fw-bold text-white">SoMeliaR</div>
                     <small class="text-secondary">Gestión de Bodega</small>
