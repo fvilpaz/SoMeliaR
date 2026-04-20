@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
+from .models import PerfilUsuario, Configuracion
 
 
 class RegistroForm(UserCreationForm):
@@ -54,3 +55,20 @@ class PerfilForm(forms.ModelForm):
         if qs.exists():
             raise forms.ValidationError("Ya existe otra cuenta con este correo electrónico.")
         return email
+
+
+class AvatarForm(forms.ModelForm):
+    class Meta:
+        model = PerfilUsuario
+        fields = ("avatar",)
+        widgets = {"avatar": forms.FileInput(attrs={"accept": "image/*"})}
+
+
+class ConfiguracionForm(forms.ModelForm):
+    class Meta:
+        model = Configuracion
+        fields = ("logo", "login_imagen")
+        widgets = {
+            "logo": forms.FileInput(attrs={"accept": "image/*"}),
+            "login_imagen": forms.FileInput(attrs={"accept": "image/*"}),
+        }

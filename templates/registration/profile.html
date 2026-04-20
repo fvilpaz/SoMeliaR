@@ -7,10 +7,30 @@
 <div class="row justify-content-center">
     <div class="col-12 col-md-8 col-lg-6">
 
+        <!-- Formulario oculto para subir avatar -->
+        <form method="post" enctype="multipart/form-data" id="avatar-form" class="d-none">
+            {% csrf_token %}
+            <input type="hidden" name="accion" value="avatar">
+            <input type="file" id="avatar-input" name="avatar" accept="image/*"
+                   onchange="document.getElementById('avatar-form').submit()">
+        </form>
+
         <div class="d-flex align-items-center gap-3 mb-4">
-            <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center"
-                 style="width:56px;height:56px;font-size:1.5rem;flex-shrink:0;">
-                <i class="bi bi-person-fill text-white"></i>
+            <div class="position-relative d-inline-block">
+                {% if user_perfil and user_perfil.avatar %}
+                <img src="{{ user_perfil.avatar.url }}" alt="Avatar"
+                     class="rounded-circle profile-avatar" style="object-fit:cover;">
+                {% else %}
+                <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center profile-avatar">
+                    <i class="bi bi-person-fill text-white fs-4"></i>
+                </div>
+                {% endif %}
+                <button type="button"
+                        class="btn btn-dark btn-sm rounded-circle position-absolute bottom-0 end-0 p-1 avatar-edit-btn"
+                        onclick="document.getElementById('avatar-input').click()"
+                        title="Cambiar foto de perfil">
+                    <i class="bi bi-pencil-fill" style="font-size:.6rem;"></i>
+                </button>
             </div>
             <div>
                 <h4 class="mb-0">{{ request.user.get_full_name|default:request.user.username }}</h4>
@@ -104,7 +124,7 @@
                 <i class="bi bi-shield-lock me-2"></i>Contraseña
             </div>
             <div class="card-body">
-                <p class="text-muted mb-3" style="font-size:.9rem;">
+                <p class="text-muted card-note mb-3">
                     Para cambiar tu contraseña ve al panel de administración de Django.
                 </p>
                 <a href="{% url 'admin:password_change' %}" class="btn btn-outline-secondary btn-sm">

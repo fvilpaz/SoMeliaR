@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Vino, Movimiento, StockConfig
+from .models import Etiqueta, Vino, Movimiento, StockConfig
 
 
 class StockConfigInline(admin.StackedInline):
@@ -13,6 +13,11 @@ class VinoAdmin(admin.ModelAdmin):
     list_filter = ["familia", "activo", "es_copa", "via_coupa", "en_canitas", "en_ene", "en_pool"]
     search_fields = ["nombre", "bodega_nombre", "denominacion_origen", "variedades"]
     inlines = [StockConfigInline]
+
+
+@admin.register(Etiqueta)
+class EtiquetaAdmin(admin.ModelAdmin):
+    list_display = ["nombre", "color"]
 
 
 @admin.register(Movimiento)

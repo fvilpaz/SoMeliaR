@@ -160,6 +160,56 @@ def generar_texto_pedido(proveedor, lineas):
         return _generar_mock(proveedor, lineas)
 
 
+def generar_descripcion_vino(vino):
+    """
+    Genera una descripción sommelier del vino usando Gemini.
+    Fallback a descripción básica si no hay API key.
+    """
+    datos = f"Nombre: {vino.nombre}"
+    if vino.bodega_nombre:
+        datos += f"\nBodega: {vino.bodega_nombre}"
+    if vino.anada:
+        datos += f"\nAñada: {vino.anada}"
+    datos += f"\nFamilia: {vino.get_familia_display()}"
+    if vino.denominacion_origen:
+        datos += f"\nDenominación de Origen: {vino.denominacion_origen}"
+    if vino.variedades:
+        datos += f"\nVariedades: {vino.variedades}"
+    if vino.azucar:
+        datos += f"\nTipo/Azúcar: {vino.azucar}"
+
+    if settings.GEMINI_API_KEY:
+        try:
+            import google.generativeai as genai
+            genai.configure(api_key=settings.GEMINI_API_KEY)
+            model = genai.GenerativeModel(settings.GEMINI_MODEL)
+            prompt = (
+                "Eres un sommelier experto. Con los datos de este vino, escribe una "
+                "descripción elegante y útil en español para una carta de restaurante de lujo. "
+                "Incluye: características visuales, aromas y matices en nariz, sabor y textura en boca, "
+                "maridajes recomendados, temperatura de servicio ideal y una frase final evocadora. "
+                "Máximo 200 palabras. Sin asteriscos ni markdown, solo texto limpio.\n\n"
+                f"DATOS DEL VINO:\n{datos}"
+            )
+            response = model.generate_content(prompt)
+            return response.text.strip()
+        except Exception as e:
+            logger.warning("Error Gemini en descripción de vino: %s", e)
+
+    # Fallback sin IA
+    partes = [f"{vino.nombre}"]
+    if vino.bodega_nombre:
+        partes.append(f"elaborado por {vino.bodega_nombre}")
+    if vino.denominacion_origen:
+        partes.append(f"con D.O. {vino.denominacion_origen}")
+    if vino.variedades:
+        partes.append(f"a partir de uvas {vino.variedades}")
+    descripcion = ", ".join(partes) + "."
+    if vino.azucar:
+        descripcion += f" Estilo: {vino.azucar}."
+    return descripcion
+
+
 def agrupar_por_proveedor(vinos_bajo_minimo):
     """Agrupa los vinos bajo mínimo por proveedor."""
     grupos = {}

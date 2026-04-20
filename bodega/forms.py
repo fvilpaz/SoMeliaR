@@ -1,5 +1,5 @@
 from django import forms
-from .models import Movimiento, Vino, StockConfig
+from .models import Etiqueta, Movimiento, Vino, StockConfig
 
 
 class MovimientoForm(forms.ModelForm):
@@ -50,6 +50,8 @@ class VinoForm(forms.ModelForm):
             "precio_coste", "precio_carta",
             "es_copa", "precio_copa",
             "via_coupa", "en_canitas", "en_ene", "en_pool",
+            "etiquetas",
+            "imagen",
             "notas", "activo",
         ]
         widgets = {

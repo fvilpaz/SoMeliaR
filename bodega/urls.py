@@ -12,4 +12,7 @@ urlpatterns = [
     path("<int:pk>/editar/", views.vino_edit, name="vino_edit"),
     path("<int:pk>/eliminar/", views.vino_delete, name="vino_delete"),
     path("<int:pk>/movimiento/", views.movimiento_create, name="movimiento_create"),
+    path("<int:pk>/descripcion/", views.vino_descripcion, name="vino_descripcion"),
+    path("etiqueta/crear/", views.etiqueta_crear, name="etiqueta_crear"),
+    path("<int:pk>/imagen/", views.vino_imagen_upload, name="vino_imagen_upload"),
 ]

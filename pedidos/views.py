@@ -1,3 +1,6 @@
+from collections import defaultdict
+from decimal import Decimal
+
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
 from django.core.mail import send_mail
@@ -105,6 +108,52 @@ def pedido_recibir(request, pk):
         pedido.save()
         messages.success(request, f"Pedido #{pedido.pk} marcado como recibido.")
     return redirect("pedidos:pedido_detail", pk=pedido.pk)
+
+
+@login_required
+def pedido_historico(request):
+    """Histórico de pedidos enviados agrupado por año y mes."""
+    pedidos = (
+        Pedido.objects
+        .filter(estado__in=[Pedido.Estado.ENVIADO, Pedido.Estado.RECIBIDO])
+        .select_related("proveedor")
+        .prefetch_related("lineas")
+        .order_by("-fecha_creacion")
+    )
+
+    # Agrupar por año → mes
+    por_anio = defaultdict(lambda: defaultdict(list))
+    for p in pedidos:
+        anio = p.fecha_creacion.year
+        mes = p.fecha_creacion.month
+        por_anio[anio][mes].append(p)
+
+    # Calcular totales por mes y año
+    MESES = ["", "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+             "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
+
+    resumen = []
+    for anio in sorted(por_anio.keys(), reverse=True):
+        meses_data = []
+        total_anio = Decimal("0")
+        for mes in sorted(por_anio[anio].keys(), reverse=True):
+            lista = por_anio[anio][mes]
+            total_mes = sum(p.total for p in lista)
+            total_anio += total_mes
+            meses_data.append({
+                "mes": mes,
+                "nombre_mes": MESES[mes],
+                "pedidos": lista,
+                "total": total_mes,
+                "count": len(lista),
+            })
+        resumen.append({
+            "anio": anio,
+            "meses": meses_data,
+            "total_anio": total_anio,
+        })
+
+    return render(request, "pedidos/pedido_historico.html", {"resumen": resumen})
 
 
 @login_required

@@ -4,6 +4,28 @@ from django.db import models
 from django.db.models import Sum
 
 
+class Etiqueta(models.Model):
+    COLORES = [
+        ("primary",   "Azul"),
+        ("success",   "Verde"),
+        ("danger",    "Rojo"),
+        ("warning",   "Amarillo"),
+        ("info",      "Cian"),
+        ("secondary", "Gris"),
+        ("dark",      "Negro"),
+    ]
+    nombre = models.CharField(max_length=50, unique=True)
+    color  = models.CharField(max_length=20, choices=COLORES, default="secondary")
+
+    class Meta:
+        ordering = ["nombre"]
+        verbose_name = "etiqueta"
+        verbose_name_plural = "etiquetas"
+
+    def __str__(self):
+        return self.nombre
+
+
 class Vino(models.Model):
     class Familia(models.TextChoices):
         ESPUMOSO_NAC = "espumoso_nac", "Burbujas Nacional"
@@ -50,6 +72,13 @@ class Vino(models.Model):
     en_canitas = models.BooleanField("Cañitas", default=False)
     en_ene = models.BooleanField("EÑE", default=False)
     en_pool = models.BooleanField("Pool", default=False)
+    etiquetas = models.ManyToManyField(
+        Etiqueta, blank=True, related_name="vinos", verbose_name="etiquetas"
+    )
+    imagen = models.ImageField(
+        upload_to="vinos/", blank=True,
+        help_text="Foto de la etiqueta o botella."
+    )
     notas = models.TextField(blank=True)
     activo = models.BooleanField(default=True, db_index=True)
     created = models.DateTimeField(auto_now_add=True)

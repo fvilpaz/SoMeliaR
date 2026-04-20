@@ -1,6 +1,32 @@
 {% extends 'base.html' %}
 {% load fmt_filters %}
-{% block title %}{{ vino }}{% endblock %}
+{% block title %}{{ vino }}<!-- Modal zoom imagen -->
+<div class="modal fade" id="zoom-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content bg-transparent border-0">
+            <div class="modal-body text-center p-0">
+                <img id="zoom-img" src="" alt="" class="img-fluid rounded shadow"
+                     style="max-height:90vh;object-fit:contain;">
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.querySelectorAll('.img-zoom').forEach(function (img) {
+    img.addEventListener('click', function () {
+        document.getElementById('zoom-img').src = this.dataset.zoom || this.src;
+        new bootstrap.Modal(document.getElementById('zoom-modal')).show();
+    });
+});
+// Cerrar con clic en la imagen ampliada
+document.getElementById('zoom-img').addEventListener('click', function () {
+    bootstrap.Modal.getInstance(document.getElementById('zoom-modal')).hide();
+});
+</script>
+{% endblock %}
+{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-start mb-3">
@@ -21,6 +47,13 @@
 </div>
 
 <div class="row">
+    {% if vino.imagen %}
+    <div class="col-12 mb-3 text-center">
+        <img src="{{ vino.imagen.url }}" alt="{{ vino.nombre }}"
+             class="rounded shadow-sm img-zoom" style="max-height:260px;max-width:100%;object-fit:contain;cursor:zoom-in;"
+             data-zoom="{{ vino.imagen.url }}" title="Clic para ampliar">
+    </div>
+    {% endif %}
     <div class="col-md-6">
         <div class="card mb-4">
             <div class="card-header">Información del Vino</div>
@@ -52,6 +85,16 @@
                     <dt class="col-sm-4">Precio Copa</dt>
                     <dd class="col-sm-8">{{ vino.precio_copa|fmt_num }}€</dd>
                     {% endif %}
+                    {% with tags=vino.etiquetas.all %}
+                    {% if tags %}
+                    <dt class="col-sm-4">Etiquetas</dt>
+                    <dd class="col-sm-8">
+                        {% for etiqueta in tags %}
+                        <span class="badge bg-{{ etiqueta.color }}">{{ etiqueta.nombre }}</span>
+                        {% endfor %}
+                    </dd>
+                    {% endif %}
+                    {% endwith %}
                     <dt class="col-sm-4">Ubicación</dt>
                     <dd class="col-sm-8">
                         {% if vino.en_canitas %}<span class="badge bg-dark">Cañitas</span>{% endif %}
@@ -96,11 +139,35 @@
     </div>
 </div>
 
+<!-- Descripción sommelier IA -->
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-stars me-1"></i>Descripción sommelier</span>
+        <button class="btn btn-sm btn-dark"
+                hx-post="{% url 'bodega:vino_descripcion' vino.pk %}"
+                hx-target="#descripcion-resultado"
+                hx-swap="innerHTML"
+                hx-indicator="#descripcion-spinner"
+                hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+            <i class="bi bi-magic me-1"></i>Generar con IA
+        </button>
+    </div>
+    <div class="card-body">
+        <div id="descripcion-spinner" class="htmx-indicator text-muted small mb-2">
+            <div class="spinner-border spinner-border-sm me-1" role="status"></div>
+            Generando descripción…
+        </div>
+        <div id="descripcion-resultado" class="text-muted descripcion-ia">
+            Pulsa el botón para generar una descripción elegante con IA.
+        </div>
+    </div>
+</div>
+
 <!-- Historial de movimientos -->
 <div class="card">
     <div class="card-header">Últimos Movimientos</div>
-    <div class="card-body p-0" style="min-width:0">
-        <table class="table table-hover mb-0" style="min-width:420px">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0 table-scroll-sm">
             <thead>
                 <tr>
                     <th>Fecha</th>

@@ -12,7 +12,7 @@
 
 <h4 class="mb-4"><i class="bi bi-plus-circle me-2"></i>{{ titulo }}</h4>
 
-<form method="post" novalidate>
+<form method="post" enctype="multipart/form-data" novalidate>
     {% csrf_token %}
     <div class="row g-4">
 
@@ -117,6 +117,93 @@
                 </div>
             </div>
 
+            <!-- Foto de la etiqueta -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-dark text-white">
+                    <i class="bi bi-image me-2"></i>Foto de la etiqueta
+                </div>
+                <div class="card-body">
+                    {% if vino %}
+                    <!-- Edición: fetch sube al instante -->
+                    <div id="imagen-wrap" class="mb-2 text-center">
+                        {% if vino.imagen %}
+                        <img src="{{ vino.imagen.url }}" alt="{{ vino.nombre }}"
+                             id="imagen-preview" class="img-fluid rounded mb-2"
+                             style="max-height:180px;object-fit:contain;">
+                        <button type="button" id="btn-borrar-imagen"
+                                class="btn btn-outline-danger btn-sm d-block mx-auto">
+                            <i class="bi bi-trash3 me-1"></i>Eliminar foto
+                        </button>
+                        {% else %}
+                        <p class="text-muted small mb-2" id="sin-imagen-msg">Sin imagen.</p>
+                        {% endif %}
+                    </div>
+                    <label class="btn btn-outline-secondary btn-sm w-100 mt-1" for="imagen-file-input">
+                        <i class="bi bi-upload me-1"></i>Elegir foto…
+                    </label>
+                    <input type="file" id="imagen-file-input" name="imagen"
+                           accept="image/*" class="d-none">
+                    {% else %}
+                    <!-- Creación: se envía con el formulario principal -->
+                    <label class="btn btn-outline-secondary btn-sm w-100" for="imagen-file-input">
+                        <i class="bi bi-upload me-1"></i>Elegir foto…
+                    </label>
+                    <input type="file" id="imagen-file-input" name="imagen"
+                           accept="image/*" class="d-none">
+                    <div id="imagen-create-preview" class="mt-2 text-center d-none">
+                        <img id="imagen-create-img" class="img-fluid rounded"
+                             style="max-height:140px;object-fit:contain;">
+                    </div>
+                    {% endif %}
+                    <div class="form-text mt-1">JPG, PNG o WEBP.</div>
+                </div>
+            </div>
+
+            <!-- Etiquetas -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-dark text-white">
+                    <i class="bi bi-tags me-2"></i>Etiquetas
+                </div>
+                <div class="card-body">
+                    <div id="etiquetas-lista">
+                        {% for etiqueta in etiquetas_all %}
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="etiquetas"
+                                   value="{{ etiqueta.pk }}" id="etiq_{{ etiqueta.pk }}"
+                                   {% if etiqueta.pk in selected_ids %}checked{% endif %}>
+                            <label class="form-check-label" for="etiq_{{ etiqueta.pk }}">
+                                <span class="badge bg-{{ etiqueta.color }}">{{ etiqueta.nombre }}</span>
+                            </label>
+                        </div>
+                        {% empty %}
+                        <p class="text-muted small mb-2">Sin etiquetas aún. Crea la primera abajo.</p>
+                        {% endfor %}
+                    </div>
+                    <hr class="my-2">
+                    <form hx-post="{% url 'bodega:etiqueta_crear' %}"
+                          hx-target="#etiquetas-lista"
+                          hx-swap="beforeend"
+                          hx-on::after-request="this.reset()"
+                          class="d-flex gap-1 mt-2">
+                        {% csrf_token %}
+                        <input type="text" name="nombre" class="form-control form-control-sm"
+                               placeholder="Nueva etiqueta…" required>
+                        <select name="color" class="form-select form-select-sm select-auto">
+                            <option value="secondary">Gris</option>
+                            <option value="primary">Azul</option>
+                            <option value="success">Verde</option>
+                            <option value="danger">Rojo</option>
+                            <option value="warning">Amarillo</option>
+                            <option value="info">Cian</option>
+                            <option value="dark">Negro</option>
+                        </select>
+                        <button type="submit" class="btn btn-sm btn-outline-dark flex-shrink-0">
+                            <i class="bi bi-plus-lg"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
             <!-- Ubicación y canal -->
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-dark text-white">Ubicación y canal</div>
@@ -165,6 +252,52 @@
 
 {% block extra_js %}
 <script>
+    // Subida de imagen (edición: fetch inmediato; creación: preview local)
+    const fileInput = document.getElementById('imagen-file-input');
+    if (fileInput) {
+        {% if vino %}
+        // --- EDICIÓN: sube al instante con fetch ---
+        const uploadUrl  = "{% url 'bodega:vino_imagen_upload' vino.pk %}";
+        const csrfToken  = "{{ csrf_token }}";
+        const wrap       = document.getElementById('imagen-wrap');
+
+        fileInput.addEventListener('change', function () {
+            if (!this.files || !this.files[0]) return;
+            const fd = new FormData();
+            fd.append('imagen', this.files[0]);
+            fd.append('csrfmiddlewaretoken', csrfToken);
+            fetch(uploadUrl, { method: 'POST', body: fd })
+                .then(r => r.text())
+                .then(html => { wrap.innerHTML = html; bindBorrar(); });
+        });
+
+        function bindBorrar() {
+            const btn = document.getElementById('btn-borrar-imagen');
+            if (!btn) return;
+            btn.addEventListener('click', function () {
+                const fd = new FormData();
+                fd.append('borrar', '1');
+                fd.append('csrfmiddlewaretoken', csrfToken);
+                fetch(uploadUrl, { method: 'POST', body: fd })
+                    .then(r => r.text())
+                    .then(html => { wrap.innerHTML = html; bindBorrar(); });
+            });
+        }
+        bindBorrar();
+        {% else %}
+        // --- CREACIÓN: preview local ---
+        fileInput.addEventListener('change', function () {
+            const preview = document.getElementById('imagen-create-preview');
+            const img     = document.getElementById('imagen-create-img');
+            if (!preview || !img) return;
+            if (this.files && this.files[0]) {
+                img.src = URL.createObjectURL(this.files[0]);
+                preview.classList.remove('d-none');
+            }
+        });
+        {% endif %}
+    }
+
     // Mostrar/ocultar precio copa
     const esCopa = document.getElementById('{{ form.es_copa.id_for_label }}');
     const precioCopaWrap = document.getElementById('precio-copa-wrap');

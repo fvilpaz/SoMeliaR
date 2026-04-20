@@ -1,3 +1,5 @@
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.urls import include, path
@@ -10,4 +12,4 @@ urlpatterns = [
     path("bodega/", include("bodega.urls")),
     path("proveedores/", include("proveedores.urls")),
     path("pedidos/", include("pedidos.urls")),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

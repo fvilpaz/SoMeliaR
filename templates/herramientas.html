@@ -47,7 +47,7 @@
                 <i class="bi bi-file-earmark-excel me-2"></i>Importar desde Excel
             </div>
             <div class="card-body d-flex flex-column">
-                <p class="text-muted" style="font-size:.9rem;">
+                <p class="text-muted card-note">
                     Sube el <strong>Libro de Bodega (.xls)</strong> para importar vinos, proveedores y stock.
                     Si ya hay datos, se añaden encima — usa "Limpiar" primero si quieres empezar desde cero.
                 </p>
@@ -67,19 +67,131 @@
         </div>
     </div>
 
+    <!-- Logo del sidebar -->
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-dark text-white">
+                <i class="bi bi-image me-2"></i>Logo del sidebar
+            </div>
+            <div class="card-body d-flex flex-column">
+                {% if app_config.logo %}
+                <div class="mb-3">
+                    <img src="{{ app_config.logo.url }}" alt="Logo actual"
+                         class="rounded" style="max-height:80px;max-width:160px;object-fit:contain;">
+                    <div class="text-muted text-xs mt-1">Logo actual</div>
+                </div>
+                {% endif %}
+                <p class="text-muted card-note">
+                    Imagen cuadrada que aparece en el sidebar. Recomendado: 200×200px o superior.
+                </p>
+                <form method="post" enctype="multipart/form-data" class="mt-auto">
+                    {% csrf_token %}
+                    <input type="hidden" name="accion" value="logo">
+                    <input type="file" name="logo" accept="image/*" class="form-control mb-2" required>
+                    <button type="submit" class="btn btn-dark w-100">
+                        <i class="bi bi-upload me-1"></i>Subir logo
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Imagen de login -->
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-dark text-white">
+                <i class="bi bi-person-bounding-box me-2"></i>Imagen de login
+            </div>
+            <div class="card-body d-flex flex-column">
+                {% if app_config.login_imagen %}
+                <div class="mb-3">
+                    <img src="{{ app_config.login_imagen.url }}" alt="Login actual"
+                         class="rounded" style="max-height:80px;max-width:160px;object-fit:contain;">
+                    <div class="text-muted text-xs mt-1">Imagen actual</div>
+                </div>
+                {% endif %}
+                <p class="text-muted card-note">
+                    Foto que aparece en la pantalla de inicio de sesión (logo circular).
+                </p>
+                <form method="post" enctype="multipart/form-data" class="mt-auto">
+                    {% csrf_token %}
+                    <input type="hidden" name="accion" value="login_imagen">
+                    <input type="file" name="login_imagen" accept="image/*" class="form-control mb-2" required>
+                    <button type="submit" class="btn btn-dark w-100">
+                        <i class="bi bi-upload me-1"></i>Subir imagen
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Escáner automático de fotos -->
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-dark text-white">
+                <i class="bi bi-search-heart me-2"></i>Escáner automático de fotos de etiquetas
+            </div>
+            <div class="card-body">
+                <p class="text-muted card-note mb-3">
+                    Busca automáticamente en internet la foto de la etiqueta para cada vino que aún no tiene imagen,
+                    igual que un scraper de carátulas de emulador. Elige cuántos procesar por pasada y pulsa el botón.
+                </p>
+                <form method="post" action="{% url 'core:escanear_imagenes' %}" id="form-scanner">
+                    {% csrf_token %}
+                    <div class="d-flex align-items-center gap-3 flex-wrap mb-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <label class="fw-semibold text-nowrap">Vinos por pasada:</label>
+                            <select name="limite" class="form-select form-select-sm select-auto">
+                                <option value="5">5</option>
+                                <option value="10" selected>10</option>
+                                <option value="20">20</option>
+                            </select>
+                        </div>
+                        <div class="text-muted small">
+                            Sin foto: <strong>{{ stats.vinos_sin_imagen }}</strong>
+                        </div>
+                        <button type="submit" class="btn btn-dark" id="btn-scanner">
+                            <i class="bi bi-stars me-1"></i>Escanear imágenes
+                        </button>
+                    </div>
+                    <div class="form-text">Cada pasada tarda ~30-60 s. Repite hasta ver "0 vinos sin foto".</div>
+                </form>
+                <form method="post" class="mt-2"
+                      onsubmit="return confirm('¿Borrar todas las fotos de vinos? Podrás volver a escanear.')">
+                    {% csrf_token %}
+                    <input type="hidden" name="accion" value="borrar_imagenes">
+                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                        <i class="bi bi-trash3 me-1"></i>Borrar todas las fotos
+                    </button>
+                </form>
+
+                <!-- Overlay de progreso -->
+                <div id="scanner-progress" class="d-none mt-3 p-3 bg-light rounded border">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="spinner-border spinner-border-sm text-dark" role="status"></div>
+                        <div>
+                            <div class="fw-semibold">Escaneando… no cierres esta página</div>
+                            <div class="text-muted small" id="scanner-status">Buscando imágenes en internet…</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Limpiar base de datos -->
     <div class="col-md-6">
-        <div class="card border-0 shadow-sm border-danger h-100" style="border-width:1px!important;">
+        <div class="card border-0 shadow-sm card-border-danger h-100">
             <div class="card-header bg-danger text-white">
                 <i class="bi bi-trash3 me-2"></i>Limpiar base de datos
             </div>
             <div class="card-body d-flex flex-column">
-                <p class="text-muted" style="font-size:.9rem;">
+                <p class="text-muted card-note">
                     Elimina <strong>todos los vinos, movimientos, proveedores, pedidos y anotaciones</strong>.
                     Los usuarios y cuentas <em>no</em> se borran.
                     Esta acción no se puede deshacer.
                 </p>
-                <div class="alert alert-warning py-2 px-3" style="font-size:.85rem;">
+                <div class="alert alert-warning py-2 px-3 text-xs">
                     <i class="bi bi-exclamation-triangle-fill me-1"></i>
                     Úsalo solo si vas a reimportar un Excel nuevo.
                 </div>
@@ -96,4 +208,23 @@
     </div>
 
 </div>
+
+{% block extra_js %}
+<script>
+document.getElementById('form-scanner').addEventListener('submit', function () {
+    const btn = document.getElementById('btn-scanner');
+    const progress = document.getElementById('scanner-progress');
+    const limite = this.querySelector('[name="limite"]').value;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Escaneando…';
+    progress.classList.remove('d-none');
+    let dots = 0;
+    setInterval(function () {
+        dots = (dots + 1) % 4;
+        document.getElementById('scanner-status').textContent =
+            'Buscando imágenes en internet' + '.'.repeat(dots + 1) + ' (procesando ' + limite + ' vinos)';
+    }, 1500);
+});
+</script>
+{% endblock %}
 {% endblock %}

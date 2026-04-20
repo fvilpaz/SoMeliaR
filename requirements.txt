@@ -10,3 +10,9 @@ whitenoise>=6.8,<7.0
 # Lectura de Excel
 xlrd>=2.0,<3.0
 openpyxl>=3.1,<4.0
+
+# Imágenes (avatares, logos)
+Pillow>=10.0,<13.0
+
+# Búsqueda de imágenes automática
+duckduckgo-search>=6.0

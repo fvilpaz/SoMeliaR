@@ -15,40 +15,120 @@
     </div>
 </div>
 
-<!-- Buscador -->
-<form method="get" class="mb-3">
-    {% if familia_actual %}
-    <input type="hidden" name="familia" value="{{ familia_actual }}">
-    {% endif %}
+<!-- Buscador en vivo -->
+<div class="mb-3">
     <div class="input-group">
-        <span class="input-group-text"><i class="bi bi-search"></i></span>
-        <input type="text" name="q" value="{{ busqueda }}" class="form-control"
-               placeholder="Buscar por nombre, bodega o D.O.…" autocomplete="off">
-        {% if busqueda %}
-        <a href="?{% if familia_actual %}familia={{ familia_actual }}{% endif %}" class="btn btn-outline-secondary">
-            <i class="bi bi-x"></i>
-        </a>
-        {% endif %}
+        <input type="text" id="live-search" class="form-control"
+               placeholder="Buscar por nombre, bodega o D.O.…"
+               autocomplete="off" value="{{ busqueda }}">
+        <button type="button" id="live-search-clear" class="btn btn-outline-secondary {% if not busqueda %}d-none{% endif %}"
+                title="Limpiar"><i class="bi bi-x"></i></button>
     </div>
-</form>
-
-<!-- Filtro por familia -->
-<div class="d-flex flex-wrap gap-2 mb-4">
-    <a href="{% url 'bodega:vino_list' %}" class="btn btn-sm {% if not familia_actual %}btn-dark{% else %}btn-outline-dark{% endif %}">
-        Todos
-    </a>
-    {% for codigo, nombre in familias %}
-    <a href="{% url 'bodega:vino_list' %}?familia={{ codigo }}"
-       class="btn btn-sm {% if familia_actual == codigo %}btn-dark{% else %}btn-outline-dark{% endif %}">
-        {{ nombre }}
-    </a>
-    {% endfor %}
+    <div id="search-empty" class="text-muted small mt-2 d-none">No hay vinos que coincidan.</div>
 </div>
 
+<!-- Filtros + ordenación + vista -->
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <div class="d-flex flex-wrap gap-2">
+        <a href="?{% if busqueda %}q={{ busqueda }}&{% endif %}vista={{ vista }}&orden={{ orden }}"
+           class="btn btn-sm {% if not familia_actual %}btn-dark{% else %}btn-outline-dark{% endif %}">Todos</a>
+        {% for codigo, nombre in familias %}
+        <a href="?familia={{ codigo }}{% if busqueda %}&q={{ busqueda }}{% endif %}&vista={{ vista }}&orden={{ orden }}"
+           class="btn btn-sm {% if familia_actual == codigo %}btn-dark{% else %}btn-outline-dark{% endif %}">{{ nombre }}</a>
+        {% endfor %}
+    </div>
+    <div class="d-flex gap-2 align-items-center">
+        <!-- Ordenación -->
+        <select class="form-select form-select-sm select-auto"
+                onchange="window.location='?{% if familia_actual %}familia={{ familia_actual }}&{% endif %}{% if busqueda %}q={{ busqueda }}&{% endif %}vista={{ vista }}&orden='+this.value">
+            <option value="nombre" {% if orden == 'nombre' %}selected{% endif %}>A → Z</option>
+            <option value="nombre_desc" {% if orden == 'nombre_desc' %}selected{% endif %}>Z → A</option>
+            <option value="familia" {% if orden == 'familia' %}selected{% endif %}>Por familia</option>
+            <option value="stock" {% if orden == 'stock' %}selected{% endif %}>Por stock</option>
+        </select>
+        <!-- Vista grid / lista -->
+        <div class="btn-group btn-group-sm">
+            <a href="?{% if familia_actual %}familia={{ familia_actual }}&{% endif %}{% if busqueda %}q={{ busqueda }}&{% endif %}orden={{ orden }}&vista=grid"
+               class="btn {% if vista == 'grid' %}btn-dark{% else %}btn-outline-dark{% endif %}" title="Vista cuadrícula">
+                <i class="bi bi-grid"></i>
+            </a>
+            <a href="?{% if familia_actual %}familia={{ familia_actual }}&{% endif %}{% if busqueda %}q={{ busqueda }}&{% endif %}orden={{ orden }}&vista=lista"
+               class="btn {% if vista == 'lista' %}btn-dark{% else %}btn-outline-dark{% endif %}" title="Vista lista">
+                <i class="bi bi-list-ul"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+{% if vista == 'lista' %}
+<!-- Vista lista -->
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Vino</th>
+                    <th class="d-none d-md-table-cell">Familia</th>
+                    <th class="d-none d-md-table-cell">D.O.</th>
+                    <th class="text-end">Stock</th>
+                    <th class="text-end d-none d-sm-table-cell">Precio</th>
+                    <th class="text-end">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for vino in vinos %}
+                <tr class="{% if vino.bajo_minimo %}table-danger{% endif %}"
+                    data-search="{{ vino.nombre|lower }} {{ vino.bodega_nombre|lower }} {{ vino.denominacion_origen|lower }}">
+                    <td>
+                        <a href="{% url 'bodega:vino_detail' vino.pk %}" class="fw-semibold text-decoration-none">
+                            {{ vino.nombre }}
+                        </a>
+                        {% if vino.bodega_nombre %}
+                        <br><small class="text-muted">{{ vino.bodega_nombre }}</small>
+                        {% endif %}
+                    </td>
+                    <td class="d-none d-md-table-cell text-muted small">{{ vino.get_familia_display }}</td>
+                    <td class="d-none d-md-table-cell text-muted small">{{ vino.denominacion_origen|default:"-" }}</td>
+                    <td class="text-end">
+                        <span class="badge {% if vino.bajo_minimo %}bg-danger{% else %}bg-success{% endif %}">
+                            {{ vino.stock_anotado|fmt_num }}
+                        </span>
+                    </td>
+                    <td class="text-end d-none d-sm-table-cell text-muted small">{{ vino.precio_coste|fmt_num }}€</td>
+                    <td class="text-end">
+                        <div class="d-flex gap-1 justify-content-end">
+                            <a href="{% url 'bodega:vino_detail' vino.pk %}" class="btn btn-sm btn-outline-secondary" title="Ver detalle">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="{% url 'bodega:vino_edit' vino.pk %}" class="btn btn-sm btn-outline-secondary" title="Editar">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="{% url 'bodega:movimiento_create' vino.pk %}" class="btn btn-sm btn-outline-primary" title="Movimiento">
+                                <i class="bi bi-plus-circle"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-muted text-center py-4">No hay vinos registrados.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% else %}
+<!-- Vista cuadrícula -->
 <div class="row">
     {% for vino in vinos %}
-    <div class="col-md-4 mb-3">
+    <div class="col-md-4 mb-3" data-search="{{ vino.nombre|lower }} {{ vino.bodega_nombre|lower }} {{ vino.denominacion_origen|lower }}">
         <div class="card h-100 {% if vino.bajo_minimo %}border-danger{% endif %}">
+            {% if vino.imagen %}
+            <img src="{{ vino.imagen.url }}" alt="{{ vino.nombre }}"
+                 class="card-img-top img-zoom"
+                 style="height:140px;object-fit:contain;background:#f8f9fa;padding:.5rem;cursor:zoom-in;"
+                 data-zoom="{{ vino.imagen.url }}" title="Clic para ampliar">
+            {% endif %}
             <div class="card-body">
                 <h5 class="card-title">
                     <a href="{% url 'bodega:vino_detail' vino.pk %}" class="text-decoration-none">
@@ -62,7 +142,7 @@
                 </p>
                 <div class="d-flex justify-content-between align-items-center">
                     <span class="badge {% if vino.bajo_minimo %}bg-danger{% else %}bg-success{% endif %} fs-6">
-                        {{ vino.stock_actual|fmt_num }} uds.
+                        {{ vino.stock_anotado|fmt_num }} uds.
                     </span>
                     <span>
                         {% if vino.es_copa %}<span class="badge bg-info"><i class="bi bi-cup"></i> Copa</span>{% endif %}
@@ -70,10 +150,25 @@
                         <span class="text-muted">{{ vino.precio_coste|fmt_num }}€</span>
                     </span>
                 </div>
+                {% with tags=vino.etiquetas.all %}
+                {% if tags %}
+                <div class="mt-2 d-flex flex-wrap gap-1">
+                    {% for etiqueta in tags %}
+                    <span class="badge bg-{{ etiqueta.color }}">{{ etiqueta.nombre }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                {% endwith %}
             </div>
-            <div class="card-footer">
-                <a href="{% url 'bodega:movimiento_create' vino.pk %}" class="btn btn-sm btn-outline-primary">
+            <div class="card-footer d-flex gap-1 flex-wrap">
+                <a href="{% url 'bodega:movimiento_create' vino.pk %}" class="btn btn-sm btn-outline-primary flex-grow-1" title="Registrar movimiento">
                     <i class="bi bi-plus-circle"></i> Movimiento
+                </a>
+                <a href="{% url 'bodega:vino_edit' vino.pk %}" class="btn btn-sm btn-outline-secondary" title="Editar vino">
+                    <i class="bi bi-pencil"></i>
+                </a>
+                <a href="{% url 'bodega:vino_detail' vino.pk %}" class="btn btn-sm btn-outline-dark" title="Ver ficha completa e IA">
+                    <i class="bi bi-stars"></i>
                 </a>
             </div>
         </div>
@@ -87,4 +182,61 @@
     </div>
     {% endfor %}
 </div>
+{% endif %}
+
+<!-- Modal zoom -->
+<div class="modal fade" id="zoom-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content bg-transparent border-0">
+            <div class="modal-body text-center p-0">
+                <img id="zoom-img" src="" alt="" class="img-fluid rounded shadow"
+                     style="max-height:90vh;object-fit:contain;">
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+// Zoom en miniaturas
+document.querySelectorAll('.img-zoom').forEach(function (img) {
+    img.addEventListener('click', function () {
+        document.getElementById('zoom-img').src = this.dataset.zoom || this.src;
+        new bootstrap.Modal(document.getElementById('zoom-modal')).show();
+    });
+});
+document.getElementById('zoom-img').addEventListener('click', function () {
+    bootstrap.Modal.getInstance(document.getElementById('zoom-modal')).hide();
+});
+
+(function () {
+    const input   = document.getElementById('live-search');
+    const clearBtn = document.getElementById('live-search-clear');
+    const empty   = document.getElementById('search-empty');
+
+    function filter() {
+        const q = input.value.toLowerCase().trim();
+        clearBtn.classList.toggle('d-none', !q);
+        const items = document.querySelectorAll('[data-search]');
+        let visible = 0;
+        items.forEach(function (el) {
+            const match = !q || el.dataset.search.includes(q);
+            el.style.display = match ? '' : 'none';
+            if (match) visible++;
+        });
+        empty.classList.toggle('d-none', visible > 0 || !q);
+    }
+
+    input.addEventListener('input', filter);
+    clearBtn.addEventListener('click', function () {
+        input.value = '';
+        filter();
+        input.focus();
+    });
+
+    // Aplicar filtro inicial si hay texto del GET
+    if (input.value) filter();
+})();
+</script>
+{% endblock %}
 {% endblock %}

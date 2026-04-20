@@ -51,12 +51,16 @@ class OpenpyxlSheet:
         except IndexError:
             return ""
 
+
 from bodega.models import Movimiento, StockConfig, Vino
 from proveedores.models import Proveedor, VinoProveedor
 from pedidos.models import Pedido, LineaPedido
 
 
-# Mapeo de las cabeceras de sección en la hoja maestra → familia
+# ---------------------------------------------------------------------------
+# Mapeos de secciones y proveedores
+# ---------------------------------------------------------------------------
+
 SECCIONES = {
     "Burbujas Nacional": Vino.Familia.ESPUMOSO_NAC,
     "Burbujas Internacional (Champagne)": Vino.Familia.CHAMPAGNE,
@@ -73,7 +77,6 @@ SECCIONES = {
     "Vinos de Propiedad": Vino.Familia.PROPIEDAD,
 }
 
-# Hojas de proveedor con su nombre normalizado
 HOJAS_PROVEEDOR = {
     "Coupa": "Coupa (Economato Meliá)",
     "Sanchez Polo": "Sánchez Polo",
@@ -91,8 +94,11 @@ HOJAS_PROVEEDOR = {
 }
 
 
+# ---------------------------------------------------------------------------
+# Helpers de conversión
+# ---------------------------------------------------------------------------
+
 def safe_decimal(val, default="0"):
-    """Convierte un valor a Decimal de forma segura."""
     if val == "" or val is None:
         return Decimal(default)
     try:
@@ -102,7 +108,6 @@ def safe_decimal(val, default="0"):
 
 
 def safe_int(val):
-    """Convierte un valor a int de forma segura."""
     try:
         return int(float(val))
     except (ValueError, TypeError):
@@ -110,7 +115,6 @@ def safe_int(val):
 
 
 def safe_stock(val):
-    """Convierte stock a Decimal con 1 decimal."""
     if val == "" or val is None:
         return None
     try:
@@ -119,21 +123,67 @@ def safe_stock(val):
         return None
 
 
-def limpiar_nombre(nombre):
-    """Limpia el nombre del vino de notas como (muestra), AGOTADO, etc."""
-    nombre = nombre.strip()
-    # No limpiar demasiado, conservar la info
-    return nombre
+def safe_str(val):
+    """Convierte valor de celda a str, devuelve '' para None/vacío."""
+    if val is None or val == "":
+        return ""
+    s = str(val).strip()
+    return "" if s.lower() in ("none", "nan", "null") else s
 
+
+def limpiar_nombre(nombre):
+    """Limpia marcadores del nombre del vino: (?), (muestra), AGOTADO, etc."""
+    nombre = nombre.strip()
+    nombre = re.sub(r'^\s*\(\?\)\s*', '', nombre)          # (?) al inicio
+    nombre = re.sub(r'\s*\(muestra\)\s*', '', nombre, flags=re.IGNORECASE)
+    nombre = re.sub(r'\s*AGOTADO\s*', '', nombre, flags=re.IGNORECASE)
+    return nombre.strip()
+
+
+# ---------------------------------------------------------------------------
+# Detección dinámica de columnas por cabecera
+# ---------------------------------------------------------------------------
+
+def leer_cabeceras(sh):
+    """Lee la fila 0 y devuelve un dict {nombre_normalizado: índice_columna}."""
+    hmap = {}
+    for c in range(sh.ncols):
+        h = str(sh.cell_value(0, c)).strip().lower()
+        h = re.sub(r'[áàä]', 'a', h)
+        h = re.sub(r'[éèë]', 'e', h)
+        h = re.sub(r'[íìï]', 'i', h)
+        h = re.sub(r'[óòö]', 'o', h)
+        h = re.sub(r'[úùü]', 'u', h)
+        h = re.sub(r'[ñ]', 'n', h)
+        if h:
+            hmap[h] = c
+    return hmap
+
+
+def col(hmap, *claves, default):
+    """Busca el índice de columna probando varias claves posibles."""
+    for clave in claves:
+        clave_norm = clave.lower()
+        if clave_norm in hmap:
+            return hmap[clave_norm]
+        # Búsqueda parcial solo para claves ≥4 chars para evitar falsos positivos
+        # con abreviaturas de una letra (ej. 'c', 'n') que coinciden con cualquier cabecera
+        if len(clave_norm) >= 4:
+            for k, v in hmap.items():
+                if len(k) >= 3 and (clave_norm in k or k in clave_norm):
+                    return v
+    return default
+
+
+# ---------------------------------------------------------------------------
+# Comando principal
+# ---------------------------------------------------------------------------
 
 class Command(BaseCommand):
     help = "Importa datos del Libro de Bodega Excel"
 
     def add_arguments(self, parser):
-        parser.add_argument(
-            "archivo",
-            help="Ruta al archivo .xls del Libro de Bodega",
-        )
+        parser.add_argument("archivo", help="Ruta al archivo .xls/.xlsx del Libro de Bodega")
 
     def handle(self, *args, **options):
         path = options["archivo"]
@@ -143,51 +193,28 @@ class Command(BaseCommand):
         self.stdout.write("IMPORTADOR DE LIBRO DE BODEGA")
         self.stdout.write("=" * 60)
 
-        # 1. Importar proveedores desde las hojas de proveedor
         proveedores = self._importar_proveedores(wb)
-
-        # 2. Importar vinos desde la hoja maestra
         vinos_map = self._importar_vinos(wb)
-
-        # 3. Vincular vinos con proveedores y crear stock
         self._vincular_proveedores(wb, vinos_map, proveedores)
-
-        # 4. Marcar vinos por copas
         self._marcar_copas(wb, vinos_map)
-
-        # 5. Importar pedidos pendientes
         self._importar_pedidos(wb, vinos_map, proveedores)
-
-        # 6. Crear superusuario
         self._crear_admin()
 
-        # Resumen
         self.stdout.write("")
         self.stdout.write("=" * 60)
-        self.stdout.write(self.style.SUCCESS(
-            f"✓ {Vino.objects.count()} vinos importados"
-        ))
-        self.stdout.write(self.style.SUCCESS(
-            f"✓ {Proveedor.objects.count()} proveedores"
-        ))
-        self.stdout.write(self.style.SUCCESS(
-            f"✓ {Movimiento.objects.count()} movimientos de stock"
-        ))
-        self.stdout.write(self.style.SUCCESS(
-            f"✓ {Vino.objects.filter(es_copa=True).count()} vinos por copas"
-        ))
+        self.stdout.write(self.style.SUCCESS(f"✓ {Vino.objects.count()} vinos importados"))
+        self.stdout.write(self.style.SUCCESS(f"✓ {Proveedor.objects.count()} proveedores"))
+        self.stdout.write(self.style.SUCCESS(f"✓ {Movimiento.objects.count()} movimientos de stock"))
+        self.stdout.write(self.style.SUCCESS(f"✓ {Vino.objects.filter(es_copa=True).count()} vinos por copas"))
         bajo = sum(1 for v in Vino.objects.all() if v.bajo_minimo)
-        self.stdout.write(self.style.SUCCESS(
-            f"✓ {bajo} vinos bajo mínimo"
-        ))
+        self.stdout.write(self.style.SUCCESS(f"✓ {bajo} vinos bajo mínimo"))
         pedidos = Pedido.objects.count()
         if pedidos:
-            self.stdout.write(self.style.SUCCESS(
-                f"✓ {pedidos} pedidos pendientes importados"
-            ))
+            self.stdout.write(self.style.SUCCESS(f"✓ {pedidos} pedidos pendientes importados"))
+
+    # -----------------------------------------------------------------------
 
     def _importar_proveedores(self, wb):
-        """Crea proveedores a partir de las hojas de proveedor."""
         self.stdout.write("\n--- Importando proveedores ---")
         proveedores = {}
 
@@ -198,18 +225,20 @@ class Command(BaseCommand):
             if sh.nrows < 2:
                 continue
 
-            # Buscar contacto en la primera fila de datos
-            email = ""
-            telefono = ""
-            contacto = ""
+            hmap = leer_cabeceras(sh)
+            c_email    = col(hmap, 'email', 'correo', 'e-mail', default=10)
+            c_contacto = col(hmap, 'contacto', 'nombre contacto', 'responsable', default=9)
+            c_telefono = col(hmap, 'telefono', 'tlf', 'tel', default=11)
+
+            email = contacto = telefono = ""
             for r in range(1, min(sh.nrows, 5)):
-                e = str(sh.cell_value(r, 10)).strip() if sh.ncols > 10 else ""
+                e = safe_str(sh.cell_value(r, c_email)) if sh.ncols > c_email else ""
                 if e and "@" in e:
                     email = e
-                    contacto = str(sh.cell_value(r, 9)).strip() if sh.ncols > 9 else ""
-                    tel = sh.cell_value(r, 11) if sh.ncols > 11 else ""
+                    contacto = safe_str(sh.cell_value(r, c_contacto)) if sh.ncols > c_contacto else ""
+                    tel = sh.cell_value(r, c_telefono) if sh.ncols > c_telefono else ""
                     if tel:
-                        telefono = str(int(tel)) if isinstance(tel, float) else str(tel)
+                        telefono = str(int(tel)) if isinstance(tel, float) else safe_str(tel)
                     break
 
             prov = Proveedor.objects.create(
@@ -224,62 +253,69 @@ class Command(BaseCommand):
         return proveedores
 
     def _importar_vinos(self, wb):
-        """Importa vinos de la hoja maestra 'Cañitas Maite (M)'."""
         self.stdout.write("\n--- Importando vinos ---")
         sh = wb.sheet_by_name("Cañitas Maite (M)")
 
-        vinos_map = {}  # nombre → Vino
-        familia_actual = Vino.Familia.ESPUMOSO_NAC  # default primera sección
+        hmap = leer_cabeceras(sh)
+        self.stdout.write(f"  Cabeceras detectadas: {list(hmap.keys())[:10]}…")
+
+        # Detectar columnas por nombre, con fallback a posición histórica
+        c_nombre      = col(hmap, 'nombre', 'vino', 'articulo', 'producto', default=1)
+        c_bodega      = col(hmap, 'bodega', 'productor', 'elaborador', default=2)
+        c_azucar      = col(hmap, 'tipo', 'azucar', 'estilo', 'dulzor', default=3)
+        c_do          = col(hmap, 'd.o.', 'denominacion', 'do', 'origen', default=4)
+        c_variedades  = col(hmap, 'variedades', 'uva', 'uvas', 'cepa', default=5)
+        c_precio      = col(hmap, 'precio coste', 'coste', 'p.coste', 'precio', default=6)
+        c_stock       = col(hmap, 'stock', 'existencias', 'unidades', default=7)
+        c_carta       = col(hmap, 'precio carta', 'pvp', 'p.v.p', 'venta', 'carta', default=8)
+        c_distrib     = col(hmap, 'distribuidor', 'proveedor', 'distribucion', default=9)
+        c_canitas     = col(hmap, 'canitas', 'c', default=10)
+        c_ene         = col(hmap, 'ene', default=11)
+        c_pool        = col(hmap, 'pool', default=12)
+
+        vinos_map = {}
+        familia_actual = Vino.Familia.ESPUMOSO_NAC
         count = 0
 
-        for r in range(1, sh.nrows):  # skip header
-            nombre = str(sh.cell_value(r, 1)).strip()
+        for r in range(1, sh.nrows):
+            nombre = safe_str(sh.cell_value(r, c_nombre))
             if not nombre or nombre == "TOTAL (sin IVA / con IVA)":
                 continue
 
             # Detectar cabeceras de sección
-            stock_val = sh.cell_value(r, 7)
-            precio_val = sh.cell_value(r, 6)
-            distribuidor = str(sh.cell_value(r, 9)).strip()
-
             es_seccion = False
             for seccion_nombre, seccion_familia in SECCIONES.items():
                 if nombre == seccion_nombre or nombre.startswith(seccion_nombre):
                     familia_actual = seccion_familia
                     es_seccion = True
                     break
-
             if es_seccion:
                 continue
 
-            # Es un vino real
-            bodega = str(sh.cell_value(r, 2)).strip()
-            azucar = str(sh.cell_value(r, 3)).strip()
-            do = str(sh.cell_value(r, 4)).strip()
-            variedades = str(sh.cell_value(r, 5)).strip()
-            precio_coste = safe_decimal(precio_val)
-            precio_carta_raw = sh.cell_value(r, 8)
-            precio_carta = safe_decimal(precio_carta_raw)
-            stock = safe_stock(stock_val)
+            nombre_limpio = limpiar_nombre(nombre)
+            if not nombre_limpio or nombre_limpio in vinos_map:
+                continue
+            # Ignorar filas con "nombre" puramente numérico (referencias, totales, años…)
+            if re.match(r'^[\d\s.,/-]+$', nombre_limpio):
+                continue
 
-            # Ubicaciones
-            canitas_val = str(sh.cell_value(r, 10)).strip().upper()
-            ene_val = str(sh.cell_value(r, 11)).strip().upper()
-            pool_val = str(sh.cell_value(r, 12)).strip().upper()
+            bodega       = safe_str(sh.cell_value(r, c_bodega))
+            azucar       = safe_str(sh.cell_value(r, c_azucar))
+            do           = safe_str(sh.cell_value(r, c_do))
+            variedades   = safe_str(sh.cell_value(r, c_variedades))
+            precio_coste = safe_decimal(sh.cell_value(r, c_precio))
+            precio_carta = safe_decimal(sh.cell_value(r, c_carta))
+            stock        = safe_stock(sh.cell_value(r, c_stock))
+            distribuidor = safe_str(sh.cell_value(r, c_distrib))
+
+            canitas_val  = safe_str(sh.cell_value(r, c_canitas)).upper()
+            ene_val      = safe_str(sh.cell_value(r, c_ene)).upper()
+            pool_val     = safe_str(sh.cell_value(r, c_pool)).upper()
 
             en_canitas = canitas_val in ("C", "B", "C-B")
-            en_ene = bool(ene_val) and ene_val not in ("", "0")
-            en_pool = pool_val in ("C", "OPCIONAL") or bool(pool_val and pool_val not in ("", "0"))
-
-            # Determinar si va por Coupa
-            via_coupa = distribuidor.lower() == "coupa"
-
-            # Limpiar nombre
-            nombre_limpio = limpiar_nombre(nombre)
-
-            # Evitar duplicados por nombre
-            if nombre_limpio in vinos_map:
-                continue
+            en_ene     = bool(ene_val) and ene_val not in ("", "0")
+            en_pool    = pool_val in ("C", "OPCIONAL") or bool(pool_val and pool_val not in ("", "0"))
+            via_coupa  = distribuidor.lower() == "coupa"
 
             vino = Vino.objects.create(
                 nombre=nombre_limpio,
@@ -298,7 +334,6 @@ class Command(BaseCommand):
 
             vinos_map[nombre_limpio] = vino
 
-            # Crear movimiento de stock si hay stock
             if stock is not None and stock > 0:
                 Movimiento.objects.create(
                     vino=vino,
@@ -307,27 +342,19 @@ class Command(BaseCommand):
                     notas="Stock importado del Libro de Bodega",
                 )
 
-            # Crear StockConfig con defaults razonables
             StockConfig.objects.create(
                 vino=vino,
                 stock_minimo=6 if precio_coste < 50 else 2,
                 stock_optimo=12 if precio_coste < 50 else 4,
             )
 
-            # Vincular con distribuidor de la hoja maestra
-            if distribuidor and distribuidor.lower() != "coupa":
-                # Lo vincularemos en _vincular_proveedores
-                vino._distribuidor_nombre = distribuidor
-            else:
-                vino._distribuidor_nombre = distribuidor
-
+            vino._distribuidor_nombre = distribuidor
             count += 1
 
         self.stdout.write(f"  {count} vinos importados")
         return vinos_map
 
     def _vincular_proveedores(self, wb, vinos_map, proveedores):
-        """Vincula vinos con proveedores usando las hojas de proveedor."""
         self.stdout.write("\n--- Vinculando vinos con proveedores ---")
         count = 0
 
@@ -335,117 +362,92 @@ class Command(BaseCommand):
             if hoja_nombre not in wb.sheet_names():
                 continue
             sh = wb.sheet_by_name(hoja_nombre)
+            hmap = leer_cabeceras(sh)
+            c_nombre = col(hmap, 'nombre', 'vino', 'articulo', 'producto', default=1)
+            c_precio = col(hmap, 'precio', 'precio coste', 'coste', 'p.coste', default=4)
 
             for r in range(1, sh.nrows):
-                nombre = str(sh.cell_value(r, 1)).strip()
+                nombre = safe_str(sh.cell_value(r, c_nombre))
                 if not nombre or nombre == "TOTAL (sin IVA / con IVA)":
                     continue
 
                 nombre_limpio = limpiar_nombre(nombre)
-                vino = vinos_map.get(nombre_limpio)
-                if not vino:
-                    # Intentar buscar por nombre parcial
-                    for key, v in vinos_map.items():
-                        if nombre_limpio.lower() in key.lower() or key.lower() in nombre_limpio.lower():
-                            vino = v
-                            break
-
+                vino = vinos_map.get(nombre_limpio) or _buscar_vino(vinos_map, nombre_limpio)
                 if not vino:
                     continue
 
-                precio = safe_decimal(sh.cell_value(r, 4) if sh.ncols > 4 else 0)
-
-                # Evitar duplicados
+                precio = safe_decimal(sh.cell_value(r, c_precio) if sh.ncols > c_precio else 0)
                 if not VinoProveedor.objects.filter(vino=vino, proveedor=prov).exists():
-                    VinoProveedor.objects.create(
-                        vino=vino,
-                        proveedor=prov,
-                        precio=precio,
-                        es_principal=True,
-                    )
+                    VinoProveedor.objects.create(vino=vino, proveedor=prov, precio=precio, es_principal=True)
                     count += 1
 
         self.stdout.write(f"  {count} vínculos vino-proveedor creados")
 
     def _marcar_copas(self, wb, vinos_map):
-        """Marca vinos que se venden por copas desde la hoja 'Vinos a Copas'."""
         self.stdout.write("\n--- Marcando vinos por copas ---")
-
         if "Vinos a Copas" not in wb.sheet_names():
             self.stdout.write("  Hoja 'Vinos a Copas' no encontrada")
             return
 
         sh = wb.sheet_by_name("Vinos a Copas")
+        hmap = leer_cabeceras(sh)
+        c_nombre     = col(hmap, 'nombre', 'vino', 'articulo', default=1)
+        c_precio_copa = col(hmap, 'precio copa', 'precio/copa', 'copa', 'pvp copa', default=8)
         count = 0
 
         for r in range(1, sh.nrows):
-            nombre = str(sh.cell_value(r, 1)).strip()
+            nombre = str(sh.cell_value(r, c_nombre)).strip()
             if not nombre or nombre == "TOTAL (sin IVA / con IVA)":
                 continue
 
-            precio_copa = safe_decimal(sh.cell_value(r, 8) if sh.ncols > 8 else 0)
             nombre_limpio = limpiar_nombre(nombre)
-
-            vino = vinos_map.get(nombre_limpio)
+            vino = vinos_map.get(nombre_limpio) or _buscar_vino(vinos_map, nombre_limpio)
             if not vino:
-                for key, v in vinos_map.items():
-                    if nombre_limpio.lower() in key.lower() or key.lower() in nombre_limpio.lower():
-                        vino = v
-                        break
+                continue
 
-            if vino:
-                vino.es_copa = True
-                vino.precio_copa = precio_copa
-                vino.save()
-                count += 1
+            precio_copa = safe_decimal(sh.cell_value(r, c_precio_copa) if sh.ncols > c_precio_copa else 0)
+            vino.es_copa = True
+            vino.precio_copa = precio_copa
+            vino.save()
+            count += 1
 
         self.stdout.write(f"  {count} vinos marcados como copa")
 
     def _importar_pedidos(self, wb, vinos_map, proveedores):
-        """Importa pedidos pendientes desde las hojas de proveedor."""
         self.stdout.write("\n--- Importando pedidos pendientes ---")
 
         for hoja_nombre, prov in proveedores.items():
             if hoja_nombre not in wb.sheet_names():
                 continue
             sh = wb.sheet_by_name(hoja_nombre)
+            hmap = leer_cabeceras(sh)
+            c_nombre  = col(hmap, 'nombre', 'vino', 'articulo', default=1)
+            c_pedido  = col(hmap, 'pedido', 'cantidad pedido', 'a pedir', default=3)
+            c_precio  = col(hmap, 'precio', 'precio coste', 'coste', default=4)
 
             lineas_pedido = []
             for r in range(1, sh.nrows):
-                nombre = str(sh.cell_value(r, 1)).strip()
+                nombre = str(sh.cell_value(r, c_nombre)).strip()
                 if not nombre or nombre == "TOTAL (sin IVA / con IVA)":
                     continue
 
-                # Columna "Pedido" (col 3)
-                pedido_val = sh.cell_value(r, 3) if sh.ncols > 3 else ""
+                pedido_val = sh.cell_value(r, c_pedido) if sh.ncols > c_pedido else ""
                 if not pedido_val or pedido_val == "":
                     continue
-
                 try:
                     cantidad = int(float(pedido_val))
                 except (ValueError, TypeError):
                     continue
-
                 if cantidad <= 0:
                     continue
 
                 nombre_limpio = limpiar_nombre(nombre)
-                vino = vinos_map.get(nombre_limpio)
-                if not vino:
-                    for key, v in vinos_map.items():
-                        if nombre_limpio.lower() in key.lower() or key.lower() in nombre_limpio.lower():
-                            vino = v
-                            break
-
+                vino = vinos_map.get(nombre_limpio) or _buscar_vino(vinos_map, nombre_limpio)
                 if not vino:
                     continue
 
-                precio = safe_decimal(sh.cell_value(r, 4) if sh.ncols > 4 else 0)
-                lineas_pedido.append({
-                    "vino": vino,
-                    "cantidad": cantidad,
-                    "precio": precio,
-                })
+                precio = safe_decimal(sh.cell_value(r, c_precio) if sh.ncols > c_precio else 0)
+                lineas_pedido.append({"vino": vino, "cantidad": cantidad, "precio": precio})
 
             if lineas_pedido:
                 pedido = Pedido.objects.create(
@@ -461,13 +463,20 @@ class Command(BaseCommand):
                         cantidad_sugerida=lp["cantidad"],
                         precio_unitario=lp["precio"],
                     )
-                self.stdout.write(
-                    f"  Pedido {prov.nombre}: {len(lineas_pedido)} líneas"
-                )
+                self.stdout.write(f"  Pedido {prov.nombre}: {len(lineas_pedido)} líneas")
 
     def _crear_admin(self):
-        """Crea superusuario admin si no existe."""
         from django.contrib.auth.models import User
         if not User.objects.filter(username="admin").exists():
             User.objects.create_superuser("admin", "admin@someliar.demo", "admin")
             self.stdout.write("\n  Superusuario creado: admin / admin")
+
+
+def _buscar_vino(vinos_map, nombre):
+    """Búsqueda tolerante: coincidencia parcial bidireccional."""
+    nl = nombre.lower()
+    for key, v in vinos_map.items():
+        kl = key.lower()
+        if nl in kl or kl in nl:
+            return v
+    return None

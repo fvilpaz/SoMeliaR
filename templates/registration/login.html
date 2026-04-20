@@ -112,7 +112,11 @@
 <body>
     <div class="login-card">
         <div class="text-center mb-4">
+            {% if app_config.login_imagen %}
+            <img src="{{ app_config.login_imagen.url }}" alt="SoMeliaR" class="login-logo mb-3">
+            {% else %}
             <img src="{% static 'img/logo_login_cayetano.jpeg' %}" alt="SoMeliaR" class="login-logo mb-3">
+            {% endif %}
             <div class="login-title">SoMeliaR</div>
             <div class="login-subtitle">Gestión de Bodega · Meliá Hotels</div>
         </div>

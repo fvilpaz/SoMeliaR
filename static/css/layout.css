@@ -368,6 +368,149 @@ body {
 }
 
 /* ==================================================
+   SALUDO
+   ================================================== */
+.app-greeting {
+  font-size: 0.9rem;
+  color: #6c757d;
+  margin-bottom: 1rem;
+  letter-spacing: 0.01em;
+}
+
+.app-greeting strong {
+  color: #343a40;
+  font-weight: 600;
+}
+
+/* ==================================================
+   CRÉDITO EN SIDEBAR
+   ================================================== */
+.sidebar-credit {
+  margin-top: 0;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.28);
+}
+
+.sidebar-credit-by {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: rgba(255, 255, 255, 0.2);
+  margin-bottom: 0.15rem;
+}
+
+.sidebar-credit-name {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.55);
+  margin-bottom: 0.4rem;
+}
+
+.sidebar-credit-links {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.sidebar-credit-links a {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: rgba(255, 255, 255, 0.35);
+  text-decoration: none;
+  font-size: 0.75rem;
+  transition: color 0.15s;
+}
+
+.sidebar-credit-links a:hover {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* ==================================================
+   UTILIDADES DE COMPONENTES
+   ================================================== */
+
+/* Texto de ayuda pequeño en cards y formularios */
+.card-note {
+  font-size: 0.9rem;
+}
+
+/* Texto aún más pequeño (alertas inline, metadatos) */
+.text-xs {
+  font-size: 0.85rem;
+}
+
+/* Descripción IA: preserva saltos de línea, tamaño legible */
+.descripcion-ia {
+  white-space: pre-line;
+  font-size: 0.95rem;
+}
+
+/* Texto preformateado (pedido en texto plano) */
+.pre-text {
+  white-space: pre-wrap;
+  font-size: 0.85rem;
+}
+
+/* Select de ancho automático (sin estirar al 100%) */
+.select-auto {
+  width: auto;
+}
+
+/* Avatar de perfil */
+.profile-avatar {
+  width: 56px;
+  height: 56px;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+/* Botón lápiz sobre el avatar */
+.avatar-edit-btn {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #fff;
+  line-height: 1;
+}
+
+/* Avatar pequeño en el sidebar */
+.sidebar-user-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+}
+
+/* Input de cantidad pequeño (pedidos, movimientos) */
+.qty-input {
+  width: 80px;
+}
+
+/* Tablas con scroll horizontal: ancho mínimo para no aplastar columnas */
+.table-scroll-sm {
+  min-width: 420px;
+}
+
+.table-scroll-md {
+  min-width: 500px;
+}
+
+.table-scroll-lg {
+  min-width: 600px;
+}
+
+/* Card con borde danger de 1px (no el grueso por defecto de Bootstrap) */
+.card-border-danger {
+  border: 1px solid var(--bs-danger) !important;
+}
+
+/* ==================================================
    MÓVIL MUY PEQUEÑO (< 400px)
    ================================================== */
 @media (max-width: 399.98px) {

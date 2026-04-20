@@ -8,9 +8,10 @@ from django.db.models.functions import Coalesce
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
+from django.views.decorators.http import require_POST
 
 from django.db.models import Q
-from .models import Vino, Movimiento, StockConfig
+from .models import Etiqueta, Vino, Movimiento, StockConfig
 from .forms import MovimientoForm, VinoForm
 
 
@@ -18,6 +19,17 @@ from .forms import MovimientoForm, VinoForm
 def vino_list(request):
     familia = request.GET.get("familia", "")
     busqueda = request.GET.get("q", "").strip()
+    orden = request.GET.get("orden", "nombre")
+    vista = request.GET.get("vista", "grid")
+
+    orden_map = {
+        "nombre": "nombre",
+        "nombre_desc": "-nombre",
+        "familia": "familia",
+        "stock": "stock_anotado",
+    }
+    order_by = orden_map.get(orden, "nombre")
+
     vinos = (
         Vino.objects
         .filter(activo=True)
@@ -39,12 +51,16 @@ def vino_list(request):
             Q(denominacion_origen__icontains=busqueda)
         )
 
+    vinos = vinos.order_by(order_by)
+
     familias = Vino.Familia.choices
     context = {
         "vinos": vinos,
         "familias": familias,
         "familia_actual": familia,
         "busqueda": busqueda,
+        "orden": orden,
+        "vista": vista,
     }
     return render(request, "bodega/vino_list.html", context)
 
@@ -62,8 +78,10 @@ def vino_detail(request, pk):
 
 @login_required
 def vino_create(request):
+    etiquetas_all = Etiqueta.objects.all()
     if request.method == "POST":
-        form = VinoForm(request.POST)
+        form = VinoForm(request.POST, request.FILES)
+        selected_ids = set(int(x) for x in request.POST.getlist("etiquetas") if x.isdigit())
         if form.is_valid():
             vino = form.save()
             stock_inicial = form.cleaned_data.get("stock_inicial") or Decimal("0")
@@ -78,21 +96,75 @@ def vino_create(request):
             return redirect("bodega:vino_detail", pk=vino.pk)
     else:
         form = VinoForm()
-    return render(request, "bodega/vino_form.html", {"form": form, "titulo": "Nuevo vino"})
+        selected_ids = set()
+    return render(request, "bodega/vino_form.html", {
+        "form": form, "titulo": "Nuevo vino",
+        "etiquetas_all": etiquetas_all, "selected_ids": selected_ids,
+    })
 
 
 @login_required
 def vino_edit(request, pk):
     vino = get_object_or_404(Vino, pk=pk)
+    etiquetas_all = Etiqueta.objects.all()
     if request.method == "POST":
-        form = VinoForm(request.POST, instance=vino)
+        form = VinoForm(request.POST, request.FILES, instance=vino)
+        selected_ids = set(int(x) for x in request.POST.getlist("etiquetas") if x.isdigit())
         if form.is_valid():
             form.save()
             messages.success(request, f"Vino «{vino}» actualizado correctamente.")
             return redirect("bodega:vino_detail", pk=vino.pk)
     else:
         form = VinoForm(instance=vino)
-    return render(request, "bodega/vino_form.html", {"form": form, "titulo": f"Editar: {vino}", "vino": vino})
+        selected_ids = set(vino.etiquetas.values_list("pk", flat=True))
+    return render(request, "bodega/vino_form.html", {
+        "form": form, "titulo": f"Editar: {vino}", "vino": vino,
+        "etiquetas_all": etiquetas_all, "selected_ids": selected_ids,
+    })
+
+
+@login_required
+@require_POST
+def vino_imagen_upload(request, pk):
+    vino = get_object_or_404(Vino, pk=pk)
+    if request.FILES.get("imagen"):
+        vino.imagen = request.FILES["imagen"]
+        vino.save()
+    if request.POST.get("borrar") and vino.imagen:
+        vino.imagen.delete(save=True)
+    preview = (
+        f'<img src="{vino.imagen.url}" alt="{vino.nombre}" '
+        f'id="imagen-preview" class="img-fluid rounded mb-2" style="max-height:180px;object-fit:contain;">'
+        f'<button type="button" class="btn btn-outline-danger btn-sm d-block" '
+        f'hx-post="{request.path}" hx-vals=\'{{"borrar":"1"}}\' '
+        f'hx-target="#imagen-wrap" hx-swap="innerHTML" '
+        f'hx-headers=\'{{"X-CSRFToken":"{request.POST.get("csrfmiddlewaretoken","")}"}}\'>'
+        f'<i class="bi bi-trash3 me-1"></i>Eliminar foto</button>'
+        if vino.imagen else '<p class="text-muted small mb-0">Sin imagen.</p>'
+    )
+    return HttpResponse(preview)
+
+
+@login_required
+@require_POST
+def etiqueta_crear(request):
+    nombre = request.POST.get("nombre", "").strip()
+    color = request.POST.get("color", "secondary")
+    if not nombre:
+        return HttpResponse("")
+    etiqueta, _ = Etiqueta.objects.get_or_create(
+        nombre__iexact=nombre,
+        defaults={"nombre": nombre, "color": color},
+    )
+    return HttpResponse(
+        f'<div class="form-check">'
+        f'<input class="form-check-input" type="checkbox" name="etiquetas" '
+        f'value="{etiqueta.pk}" id="etiq_{etiqueta.pk}" checked>'
+        f'<label class="form-check-label" for="etiq_{etiqueta.pk}">'
+        f'<span class="badge bg-{etiqueta.color}">{etiqueta.nombre}</span>'
+        f'</label>'
+        f'</div>'
+    )
 
 
 @login_required
@@ -191,6 +263,15 @@ def movimiento_rapido(request):
 
     context = {"vinos": vinos}
     return render(request, "bodega/movimiento_rapido.html", context)
+
+
+@login_required
+@require_POST
+def vino_descripcion(request, pk):
+    vino = get_object_or_404(Vino, pk=pk)
+    from pedidos.services import generar_descripcion_vino
+    texto = generar_descripcion_vino(vino)
+    return HttpResponse(texto)
 
 
 @login_required
