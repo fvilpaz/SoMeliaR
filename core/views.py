@@ -1,11 +1,8 @@
 from decimal import Decimal
 
 import io
-import re
-import time
 import tempfile
 import os
-import requests as http_requests
 
 from django.contrib import messages
 from django.contrib.auth import login
@@ -218,8 +215,7 @@ def herramientas(request):
                 messages.success(request, "Imagen de login actualizada.")
             return redirect("core:herramientas")
 
-    scan_state = cache.get(SCAN_KEY)
-    return render(request, "herramientas.html", {"stats": stats, "scan_state": scan_state})
+    return render(request, "herramientas.html", {"stats": stats})
 
 
 def registro(request):
@@ -263,161 +259,5 @@ def perfil(request):
     return render(request, "registration/profile.html", {"form": form, "avatar_form": avatar_form})
 
 
-import threading
-from django.core.cache import cache
-
-SCAN_KEY = "wine_scan_state"
-
-_SCAN_HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-                  "(KHTML, like Gecko) Chrome/124.0 Safari/537.36",
-    "Accept-Language": "es-ES,es;q=0.9",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-}
-_OG_PATS = [
-    re.compile(r'<meta[^>]+property=["\']og:image["\'][^>]+content=["\'](https?://[^"\'> ]+)', re.I),
-    re.compile(r'<meta[^>]+content=["\'](https?://[^"\'> ]+)["\'][^>]+property=["\']og:image["\']', re.I),
-    re.compile(r'<meta[^>]+name=["\']twitter:image["\'][^>]+content=["\'](https?://[^"\'> ]+)', re.I),
-]
-_STOPWORDS = {'el','la','los','las','de','del','y','e','vino','wine','bodegas','bodega'}
-
-
-def _guardar_imagen_vino(vino, img_url):
-    try:
-        r = http_requests.get(img_url, timeout=8, headers=_SCAN_HEADERS)
-        if r.status_code == 200 and len(r.content) > 4000:
-            ext = img_url.split("?")[0].rsplit(".", 1)[-1].lower()
-            if ext not in ("jpg", "jpeg", "png", "webp", "gif"):
-                ext = "jpg"
-            from django.core.files.base import ContentFile
-            vino.imagen.save(f"{vino.pk}_scan.{ext}", ContentFile(r.content), save=True)
-            return True
-    except Exception:
-        pass
-    return False
-
-
-def _scan_worker(vino_pks):
-    """Corre en hilo secundario. Actualiza cache con el progreso."""
-    for i, pk in enumerate(vino_pks):
-        state = cache.get(SCAN_KEY) or {}
-        if state.get("cancelar"):
-            state["status"] = "cancelado"
-            cache.set(SCAN_KEY, state, 3600)
-            return
-
-        try:
-            vino = Vino.objects.get(pk=pk)
-        except Vino.DoesNotExist:
-            continue
-
-        nombre_limpio = re.sub(r'\b(19|20)\d{2}\b', '', vino.nombre).strip()
-        # Query completo: nombre con año + bodega (si es distinta) + DO
-        partes = [vino.nombre]
-        if vino.bodega_nombre and vino.bodega_nombre.lower() not in vino.nombre.lower():
-            partes.append(vino.bodega_nombre)
-        if vino.denominacion_origen:
-            partes.append(vino.denominacion_origen)
-        query = " ".join(partes)
-
-        state["progreso"] = i + 1
-        state["procesando"] = vino.nombre
-        cache.set(SCAN_KEY, state, 3600)
-
-        descargado = False
-        time.sleep(3)  # pausa necesaria para evitar rate limit de DDG
-
-        exc_msg = ""
-        try:
-            from duckduckgo_search import DDGS
-            ddgs = DDGS()
-            resultados = list(ddgs.text(
-                f"{query} vino",
-                max_results=4,
-                region="es-es",
-            ))
-            for res in resultados:
-                href = res.get("href", "")
-                if not href:
-                    continue
-                # Extraer og:image de la página del producto (foto oficial)
-                try:
-                    r = http_requests.get(href, timeout=5, headers=_SCAN_HEADERS)
-                    if r.status_code == 200:
-                        for pat in _OG_PATS:
-                            m = pat.search(r.text)
-                            if m:
-                                img_url = m.group(1)
-                                if _guardar_imagen_vino(vino, img_url):
-                                    descargado = True
-                                    break
-                except Exception:
-                    pass
-                if descargado:
-                    break
-        except Exception as exc:
-            exc_msg = f" [{str(exc)[:60]}]"
-
-        state = cache.get(SCAN_KEY) or {}
-        if descargado:
-            state["ok"] = state.get("ok", 0) + 1
-            state.setdefault("log", []).insert(0, f"✓ {nombre_limpio}")
-        else:
-            state["sin_resultado"] = state.get("sin_resultado", 0) + 1
-            state.setdefault("log", []).insert(0, f"✗ {nombre_limpio}{exc_msg}")
-        cache.set(SCAN_KEY, state, 3600)
-
-    state = cache.get(SCAN_KEY) or {}
-    state["status"] = "done"
-    state["procesando"] = ""
-    cache.set(SCAN_KEY, state, 3600)
-
-
-@login_required
-@require_POST
-def escanear_imagenes(request):
-    if not request.user.is_superuser:
-        return HttpResponseForbidden("Solo superusuarios.")
-
-    # Cancelar si se pide
-    if request.POST.get("cancelar"):
-        state = cache.get(SCAN_KEY) or {}
-        state["cancelar"] = True
-        cache.set(SCAN_KEY, state, 3600)
-        return redirect("core:herramientas")
-
-    # No lanzar dos a la vez
-    state = cache.get(SCAN_KEY) or {}
-    if state.get("status") == "running":
-        messages.warning(request, "Ya hay un escaneo en curso.")
-        return redirect("core:herramientas")
-
-    vinos = list(Vino.objects.filter(activo=True, imagen="").order_by("nombre"))
-
-    if not vinos:
-        messages.info(request, "Todos los vinos ya tienen foto.")
-        return redirect("core:herramientas")
-
-    cache.set(SCAN_KEY, {
-        "status": "running",
-        "total": len(vinos),
-        "progreso": 0,
-        "ok": 0,
-        "sin_resultado": 0,
-        "procesando": "",
-        "log": [],
-        "cancelar": False,
-    }, 7200)
-
-    t = threading.Thread(target=_scan_worker, args=([v.pk for v in vinos],), daemon=True)
-    t.start()
-
-    return redirect("core:herramientas")
-
-
-@login_required
-def escanear_estado(request):
-    state = cache.get(SCAN_KEY) or {"status": "idle"}
-    return JsonResponse(state)
 
 

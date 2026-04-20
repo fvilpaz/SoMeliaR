@@ -1,9 +1,5 @@
 import csv
-import re
-import time
 from decimal import Decimal
-
-import requests as http_requests
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -149,76 +145,6 @@ def vino_imagen_upload(request, pk):
     return HttpResponse(preview)
 
 
-_SCAN_HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-                  "(KHTML, like Gecko) Chrome/124.0 Safari/537.36",
-    "Accept-Language": "es-ES,es;q=0.9",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-}
-_OG_PATS = [
-    re.compile(r'<meta[^>]+property=["\']og:image["\'][^>]+content=["\'](https?://[^"\'> ]+)', re.I),
-    re.compile(r'<meta[^>]+content=["\'](https?://[^"\'> ]+)["\'][^>]+property=["\']og:image["\']', re.I),
-    re.compile(r'<meta[^>]+name=["\']twitter:image["\'][^>]+content=["\'](https?://[^"\'> ]+)', re.I),
-]
-
-
-def _guardar_imagen_desde_url(vino, img_url):
-    try:
-        r = http_requests.get(img_url, timeout=8, headers=_SCAN_HEADERS)
-        if r.status_code == 200 and len(r.content) > 4000:
-            ext = img_url.split("?")[0].rsplit(".", 1)[-1].lower()
-            if ext not in ("jpg", "jpeg", "png", "webp", "gif"):
-                ext = "jpg"
-            from django.core.files.base import ContentFile
-            vino.imagen.save(f"{vino.pk}_scan.{ext}", ContentFile(r.content), save=True)
-            return True
-    except Exception:
-        pass
-    return False
-
-
-@login_required
-@require_POST
-def vino_scan_imagen(request, pk):
-    vino = get_object_or_404(Vino, pk=pk)
-
-    partes = [vino.nombre]
-    if vino.bodega_nombre and vino.bodega_nombre.lower() not in vino.nombre.lower():
-        partes.append(vino.bodega_nombre)
-    if vino.denominacion_origen:
-        partes.append(vino.denominacion_origen)
-    query = " ".join(partes) + " vino"
-
-    encontrado = False
-    try:
-        from duckduckgo_search import DDGS
-        resultados = list(DDGS().text(query, max_results=4, region="es-es"))
-        for res in resultados:
-            href = res.get("href", "")
-            if not href:
-                continue
-            try:
-                r = http_requests.get(href, timeout=5, headers=_SCAN_HEADERS)
-                if r.status_code == 200:
-                    for pat in _OG_PATS:
-                        m = pat.search(r.text)
-                        if m:
-                            if _guardar_imagen_desde_url(vino, m.group(1)):
-                                encontrado = True
-                                break
-            except Exception:
-                pass
-            if encontrado:
-                break
-    except Exception:
-        pass
-
-    if encontrado:
-        messages.success(request, f"Foto encontrada para «{vino.nombre}».")
-    else:
-        messages.warning(request, f"No se encontró foto para «{vino.nombre}».")
-
-    return redirect(request.META.get("HTTP_REFERER", "bodega:vino_list"))
 
 
 @login_required
@@ -345,8 +271,14 @@ def movimiento_rapido(request):
 @require_POST
 def vino_descripcion(request, pk):
     vino = get_object_or_404(Vino, pk=pk)
+    regenerar = request.POST.get("regenerar") == "1"
+    if vino.descripcion_ia and not regenerar:
+        return HttpResponse(vino.descripcion_ia)
     from pedidos.services import generar_descripcion_vino
     texto = generar_descripcion_vino(vino)
+    if texto:
+        vino.descripcion_ia = texto
+        vino.save(update_fields=["descripcion_ia"])
     return HttpResponse(texto)
 
 

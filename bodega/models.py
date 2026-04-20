@@ -79,6 +79,7 @@ class Vino(models.Model):
         upload_to="vinos/", blank=True,
         help_text="Foto de la etiqueta o botella."
     )
+    descripcion_ia = models.TextField(blank=True)
     notas = models.TextField(blank=True)
     activo = models.BooleanField(default=True, db_index=True)
     created = models.DateTimeField(auto_now_add=True)
