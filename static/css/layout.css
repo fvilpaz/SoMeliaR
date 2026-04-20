@@ -267,6 +267,10 @@ body {
   color: #ffc107 !important;
 }
 
+#sidebar .sidebar-link--manual {
+  color: #a78bfa !important;
+}
+
 /* Separadores de secciones */
 .sidebar-divider {
   margin-top: 0.5rem;
@@ -479,8 +483,8 @@ body {
 
 /* Avatar pequeño en el sidebar */
 .sidebar-user-avatar {
-  width: 80px;
-  height: 80px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;

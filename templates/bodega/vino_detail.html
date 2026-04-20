@@ -144,22 +144,36 @@ document.getElementById('zoom-img').addEventListener('click', function () {
 <div class="card mb-4">
     <div class="card-header d-flex justify-content-between align-items-center">
         <span><i class="bi bi-stars me-1"></i>Descripción sommelier</span>
-        <button class="btn btn-sm btn-dark"
-                hx-post="{% url 'bodega:vino_descripcion' vino.pk %}"
-                hx-target="#descripcion-resultado"
-                hx-swap="innerHTML"
-                hx-indicator="#descripcion-spinner"
-                hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
-            <i class="bi bi-magic me-1"></i>Generar con IA
-        </button>
+        <div class="d-flex gap-2">
+            {% if vino.descripcion_ia %}
+            <button class="btn btn-sm btn-outline-secondary"
+                    hx-post="{% url 'bodega:vino_descripcion' vino.pk %}"
+                    hx-vals='{"regenerar": "1"}'
+                    hx-target="#descripcion-resultado"
+                    hx-swap="innerHTML"
+                    hx-indicator="#descripcion-spinner"
+                    hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+                <i class="bi bi-arrow-clockwise me-1"></i>Regenerar
+            </button>
+            {% else %}
+            <button class="btn btn-sm btn-dark"
+                    hx-post="{% url 'bodega:vino_descripcion' vino.pk %}"
+                    hx-target="#descripcion-resultado"
+                    hx-swap="innerHTML"
+                    hx-indicator="#descripcion-spinner"
+                    hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+                <i class="bi bi-magic me-1"></i>Generar con IA
+            </button>
+            {% endif %}
+        </div>
     </div>
     <div class="card-body">
         <div id="descripcion-spinner" class="htmx-indicator text-muted small mb-2">
             <div class="spinner-border spinner-border-sm me-1" role="status"></div>
             Generando descripción…
         </div>
-        <div id="descripcion-resultado" class="text-muted descripcion-ia">
-            Pulsa el botón para generar una descripción elegante con IA.
+        <div id="descripcion-resultado" class="{% if vino.descripcion_ia %}descripcion-ia{% else %}text-muted descripcion-ia{% endif %}">
+            {% if vino.descripcion_ia %}{{ vino.descripcion_ia }}{% else %}Pulsa el botón para generar una descripción elegante con IA.{% endif %}
         </div>
     </div>
 </div>

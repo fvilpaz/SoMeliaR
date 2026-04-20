@@ -11,4 +11,6 @@ services:
         value: "False"
       - key: GEMINI_API_KEY
         sync: false
+      - key: CLOUDINARY_URL
+        sync: false
     autoDeploy: true
