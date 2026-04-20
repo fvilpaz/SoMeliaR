@@ -7,6 +7,7 @@ from django.dispatch import receiver
 class PerfilUsuario(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="perfil")
     avatar = models.ImageField(upload_to="avatares/", blank=True)
+    foto_en_sidebar = models.BooleanField(default=True)
 
     def __str__(self):
         return f"Perfil de {self.user.username}"

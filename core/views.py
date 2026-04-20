@@ -282,6 +282,8 @@ def perfil(request):
             form = PerfilForm(request.POST, instance=request.user)
             if form.is_valid():
                 form.save()
+                perfil_obj.foto_en_sidebar = "foto_en_sidebar" in request.POST
+                perfil_obj.save()
                 messages.success(request, "Perfil actualizado correctamente.")
                 return redirect("core:perfil")
             avatar_form = AvatarForm(instance=perfil_obj)

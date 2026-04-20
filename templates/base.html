@@ -120,10 +120,10 @@
                 </ul>
 
                 <!-- Usuario y logout al fondo del sidebar -->
-                <div class="px-3 pb-3 mt-auto border-top border-secondary pt-3">
-                    <a href="{% url 'core:perfil' %}" class="d-flex align-items-center gap-2 mb-2 text-decoration-none"
+                <div class="px-3 pb-4 mt-auto border-top border-secondary pt-4">
+                    <a href="{% url 'core:perfil' %}" class="d-flex align-items-center gap-2 mb-3 text-decoration-none"
                         style="min-width:0;">
-                        {% if user_perfil and user_perfil.avatar %}
+                        {% if user_perfil and user_perfil.avatar and user_perfil.foto_en_sidebar %}
                         <img src="{{ user_perfil.avatar.url }}" alt="" class="sidebar-user-avatar"
                             onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
                         <div class="sidebar-user-avatar bg-secondary text-white fw-bold flex-shrink-0"
@@ -148,7 +148,7 @@
                         </div>
                         <i class="bi bi-pencil text-secondary ms-auto flex-shrink-0" style="font-size:.7rem;"></i>
                     </a>
-                    <form method="post" action="{% url 'logout' %}">
+                    <form method="post" action="{% url 'logout' %}" class="mt-3">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-outline-secondary w-100" style="padding:.5rem 1rem;">
                             <i class="bi bi-box-arrow-right me-1"></i>Cerrar sesión

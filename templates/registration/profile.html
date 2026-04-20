@@ -119,6 +119,18 @@
                         {% endfor %}
                     </div>
 
+                    <div class="mb-4">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" role="switch"
+                                   id="id_foto_en_sidebar" name="foto_en_sidebar"
+                                   {% if user_perfil.foto_en_sidebar %}checked{% endif %}>
+                            <label class="form-check-label" for="id_foto_en_sidebar">
+                                Mostrar foto en el sidebar
+                            </label>
+                        </div>
+                        <div class="form-text">Si está desactivado, se mostrarán tus iniciales en lugar de la foto.</div>
+                    </div>
+
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-dark px-4">
                             <i class="bi bi-check-lg me-1"></i>Guardar cambios
