@@ -93,6 +93,11 @@ def dashboard(request):
 
 
 @login_required
+def ayuda(request):
+    return render(request, "ayuda.html")
+
+
+@login_required
 def anotaciones(request):
     if request.method == "POST":
         texto = request.POST.get("texto", "").strip()
