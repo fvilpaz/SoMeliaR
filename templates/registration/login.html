@@ -16,7 +16,9 @@
     <div class="login-card">
         <div class="text-center mb-4">
             {% if app_config.login_imagen %}
-            <img src="{{ app_config.login_imagen.url }}" alt="SoMeliaR" class="login-logo mb-3">
+            <img src="{{ app_config.login_imagen.url }}" alt="SoMeliaR" class="login-logo mb-3"
+                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+            <div class="login-logo-placeholder login-logo mb-3" style="display:none;">🍷</div>
             {% else %}
             <div class="login-logo-placeholder login-logo mb-3">🍷</div>
             {% endif %}

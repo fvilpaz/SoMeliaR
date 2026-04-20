@@ -35,7 +35,9 @@
                 <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3"
                     data-bs-dismiss="offcanvas" data-bs-target="#sidebar" aria-label="Cerrar"></button>
                 {% if app_config.logo %}
-                <img src="{{ app_config.logo.url }}" alt="SoMeliaR" class="sidebar-logo-sm mb-2">
+                <img src="{{ app_config.logo.url }}" alt="SoMeliaR" class="sidebar-logo-sm mb-2"
+                     onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                <div class="sidebar-logo-placeholder sidebar-logo-sm mb-2" style="display:none;">🍷</div>
                 {% else %}
                 <div class="sidebar-logo-placeholder sidebar-logo-sm mb-2">🍷</div>
                 {% endif %}
@@ -50,7 +52,10 @@
                 <div class="sidebar-brand d-none d-lg-flex flex-column align-items-center py-4 px-3">
                     {% if app_config.logo %}
                     <img src="{{ app_config.logo.url }}" alt="SoMeliaR" class="sidebar-logo mb-2"
-                         {% if request.user.is_superuser %}title="Cambiar logo en Herramientas"{% endif %}>
+                         {% if request.user.is_superuser %}title="Cambiar logo en Herramientas"{% endif %}
+                         onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                    <div class="sidebar-logo-placeholder sidebar-logo mb-2" style="display:none;"
+                         {% if request.user.is_superuser %}title="Subir logo en Herramientas"{% endif %}>🍷</div>
                     {% else %}
                     <div class="sidebar-logo-placeholder sidebar-logo mb-2"
                          {% if request.user.is_superuser %}title="Subir logo en Herramientas"{% endif %}>🍷</div>
