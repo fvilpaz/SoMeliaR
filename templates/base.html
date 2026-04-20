@@ -120,10 +120,12 @@
                         style="min-width:0;">
                         {% if user_perfil and user_perfil.avatar %}
                         <img src="{{ user_perfil.avatar.url }}" alt="" class="sidebar-user-avatar"
-                             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                             style="display:none;"
+                             onload="this.style.display='block';this.nextElementSibling.style.display='none';"
+                             onerror="this.style.display='none';">
                         {% endif %}
                         <div class="sidebar-user-avatar d-flex align-items-center justify-content-center bg-secondary text-white fw-bold flex-shrink-0"
-                             style="font-size:1.1rem;letter-spacing:-.5px;{% if user_perfil and user_perfil.avatar %}display:none!important;{% endif %}">
+                             style="font-size:1.1rem;letter-spacing:-.5px;">
                             {{ request.user.first_name|slice:":1"|upper }}{{ request.user.last_name|slice:":1"|upper }}{% if not request.user.first_name %}{{ request.user.username|slice:":2"|upper }}{% endif %}
                         </div>
                         <div style="min-width:0;">

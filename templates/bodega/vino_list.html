@@ -127,7 +127,8 @@
             <img src="{{ vino.imagen.url }}" alt="{{ vino.nombre }}"
                  class="card-img-top img-zoom"
                  style="height:140px;object-fit:contain;background:#f8f9fa;padding:.5rem;cursor:zoom-in;"
-                 data-zoom="{{ vino.imagen.url }}" title="Clic para ampliar">
+                 data-zoom="{{ vino.imagen.url }}" title="Clic para ampliar"
+                 onerror="this.style.display='none';">
             {% endif %}
             <div class="card-body">
                 <h5 class="card-title">

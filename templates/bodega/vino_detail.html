@@ -51,7 +51,8 @@ document.getElementById('zoom-img').addEventListener('click', function () {
     <div class="col-12 mb-3 text-center">
         <img src="{{ vino.imagen.url }}" alt="{{ vino.nombre }}"
              class="rounded shadow-sm img-zoom" style="max-height:260px;max-width:100%;object-fit:contain;cursor:zoom-in;"
-             data-zoom="{{ vino.imagen.url }}" title="Clic para ampliar">
+             data-zoom="{{ vino.imagen.url }}" title="Clic para ampliar"
+             onerror="this.parentElement.style.display='none';">
     </div>
     {% endif %}
     <div class="col-md-6">
