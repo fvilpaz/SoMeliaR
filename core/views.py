@@ -218,7 +218,8 @@ def herramientas(request):
                 messages.success(request, "Imagen de login actualizada.")
             return redirect("core:herramientas")
 
-    return render(request, "herramientas.html", {"stats": stats})
+    scan_state = cache.get(SCAN_KEY)
+    return render(request, "herramientas.html", {"stats": stats, "scan_state": scan_state})
 
 
 def registro(request):
@@ -262,137 +263,161 @@ def perfil(request):
     return render(request, "registration/profile.html", {"form": form, "avatar_form": avatar_form})
 
 
+import threading
+from django.core.cache import cache
+
+SCAN_KEY = "wine_scan_state"
+
+_SCAN_HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                  "(KHTML, like Gecko) Chrome/124.0 Safari/537.36",
+    "Accept-Language": "es-ES,es;q=0.9",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+}
+_OG_PATS = [
+    re.compile(r'<meta[^>]+property=["\']og:image["\'][^>]+content=["\'](https?://[^"\'> ]+)', re.I),
+    re.compile(r'<meta[^>]+content=["\'](https?://[^"\'> ]+)["\'][^>]+property=["\']og:image["\']', re.I),
+    re.compile(r'<meta[^>]+name=["\']twitter:image["\'][^>]+content=["\'](https?://[^"\'> ]+)', re.I),
+]
+_STOPWORDS = {'el','la','los','las','de','del','y','e','vino','wine','bodegas','bodega'}
+
+
+def _guardar_imagen_vino(vino, img_url):
+    try:
+        r = http_requests.get(img_url, timeout=8, headers=_SCAN_HEADERS)
+        if r.status_code == 200 and len(r.content) > 4000:
+            ext = img_url.split("?")[0].rsplit(".", 1)[-1].lower()
+            if ext not in ("jpg", "jpeg", "png", "webp", "gif"):
+                ext = "jpg"
+            from django.core.files.base import ContentFile
+            vino.imagen.save(f"{vino.pk}_scan.{ext}", ContentFile(r.content), save=True)
+            return True
+    except Exception:
+        pass
+    return False
+
+
+def _scan_worker(vino_pks):
+    """Corre en hilo secundario. Actualiza cache con el progreso."""
+    for i, pk in enumerate(vino_pks):
+        state = cache.get(SCAN_KEY) or {}
+        if state.get("cancelar"):
+            state["status"] = "cancelado"
+            cache.set(SCAN_KEY, state, 3600)
+            return
+
+        try:
+            vino = Vino.objects.get(pk=pk)
+        except Vino.DoesNotExist:
+            continue
+
+        nombre_limpio = re.sub(r'\b(19|20)\d{2}\b', '', vino.nombre).strip()
+        # Query completo: nombre con año + bodega (si es distinta) + DO
+        partes = [vino.nombre]
+        if vino.bodega_nombre and vino.bodega_nombre.lower() not in vino.nombre.lower():
+            partes.append(vino.bodega_nombre)
+        if vino.denominacion_origen:
+            partes.append(vino.denominacion_origen)
+        query = " ".join(partes)
+
+        state["progreso"] = i + 1
+        state["procesando"] = vino.nombre
+        cache.set(SCAN_KEY, state, 3600)
+
+        descargado = False
+        time.sleep(3)  # pausa necesaria para evitar rate limit de DDG
+
+        exc_msg = ""
+        try:
+            from duckduckgo_search import DDGS
+            ddgs = DDGS()
+            resultados = list(ddgs.text(
+                f"{query} vino",
+                max_results=4,
+                region="es-es",
+            ))
+            for res in resultados:
+                href = res.get("href", "")
+                if not href:
+                    continue
+                # Extraer og:image de la página del producto (foto oficial)
+                try:
+                    r = http_requests.get(href, timeout=5, headers=_SCAN_HEADERS)
+                    if r.status_code == 200:
+                        for pat in _OG_PATS:
+                            m = pat.search(r.text)
+                            if m:
+                                img_url = m.group(1)
+                                if _guardar_imagen_vino(vino, img_url):
+                                    descargado = True
+                                    break
+                except Exception:
+                    pass
+                if descargado:
+                    break
+        except Exception as exc:
+            exc_msg = f" [{str(exc)[:60]}]"
+
+        state = cache.get(SCAN_KEY) or {}
+        if descargado:
+            state["ok"] = state.get("ok", 0) + 1
+            state.setdefault("log", []).insert(0, f"✓ {nombre_limpio}")
+        else:
+            state["sin_resultado"] = state.get("sin_resultado", 0) + 1
+            state.setdefault("log", []).insert(0, f"✗ {nombre_limpio}{exc_msg}")
+        cache.set(SCAN_KEY, state, 3600)
+
+    state = cache.get(SCAN_KEY) or {}
+    state["status"] = "done"
+    state["procesando"] = ""
+    cache.set(SCAN_KEY, state, 3600)
+
+
 @login_required
 @require_POST
 def escanear_imagenes(request):
     if not request.user.is_superuser:
         return HttpResponseForbidden("Solo superusuarios.")
 
-    try:
-        from duckduckgo_search import DDGS
-    except ImportError:
-        messages.error(request, "Librería duckduckgo-search no instalada.")
+    # Cancelar si se pide
+    if request.POST.get("cancelar"):
+        state = cache.get(SCAN_KEY) or {}
+        state["cancelar"] = True
+        cache.set(SCAN_KEY, state, 3600)
         return redirect("core:herramientas")
 
-    limite = int(request.POST.get("limite", 10))
-    vinos = list(Vino.objects.filter(activo=True, imagen="").order_by("nombre")[:limite])
+    # No lanzar dos a la vez
+    state = cache.get(SCAN_KEY) or {}
+    if state.get("status") == "running":
+        messages.warning(request, "Ya hay un escaneo en curso.")
+        return redirect("core:herramientas")
 
-    ok, sin_resultado = 0, 0
-    log = []
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-                      "(KHTML, like Gecko) Chrome/124.0 Safari/537.36",
-        "Accept-Language": "es-ES,es;q=0.9",
-    }
+    vinos = list(Vino.objects.filter(activo=True, imagen="").order_by("nombre"))
 
-    _og_patterns = [
-        re.compile(r'<meta[^>]+property=["\']og:image["\'][^>]+content=["\'](https?://[^"\'> ]+)', re.I),
-        re.compile(r'<meta[^>]+content=["\'](https?://[^"\'> ]+)["\'][^>]+property=["\']og:image["\']', re.I),
-        re.compile(r'<meta[^>]+name=["\']twitter:image["\'][^>]+content=["\'](https?://[^"\'> ]+)', re.I),
-    ]
-    _STOPWORDS = {'el', 'la', 'los', 'las', 'de', 'del', 'y', 'e', 'vino', 'wine', 'bodegas', 'bodega'}
+    if not vinos:
+        messages.info(request, "Todos los vinos ya tienen foto.")
+        return redirect("core:herramientas")
 
-    def _confianza(nombre_vino, bodega, titulo, url):
-        """Puntuación 0-1 de coincidencia entre el resultado y el vino buscado."""
-        haystack = (titulo + " " + url).lower()
-        # Palabras del nombre (sin año ni stopwords)
-        nombre_limpio = re.sub(r'\b(19|20)\d{2}\b', '', nombre_vino).lower()
-        palabras = [w for w in nombre_limpio.split() if w not in _STOPWORDS and len(w) > 2]
-        if not palabras:
-            return 0.0
-        hits_nombre = sum(1 for w in palabras if w in haystack)
-        score = hits_nombre / len(palabras)
-        # Bonus si aparece la bodega
-        if bodega:
-            bodega_words = [w for w in bodega.lower().split() if w not in _STOPWORDS and len(w) > 2]
-            if bodega_words and any(w in haystack for w in bodega_words):
-                score += 0.3
-        # Bonus si el año del vino también aparece
-        anyo = re.search(r'\b(19|20)\d{2}\b', nombre_vino)
-        if anyo and anyo.group() in haystack:
-            score += 0.2
-        return min(score, 1.0)
+    cache.set(SCAN_KEY, {
+        "status": "running",
+        "total": len(vinos),
+        "progreso": 0,
+        "ok": 0,
+        "sin_resultado": 0,
+        "procesando": "",
+        "log": [],
+        "cancelar": False,
+    }, 7200)
 
-    def _og_de_pagina(url):
-        try:
-            r = http_requests.get(url, timeout=5, headers=headers)
-            if r.status_code == 200:
-                for pat in _og_patterns:
-                    m = pat.search(r.text)
-                    if m:
-                        return m.group(1)
-        except Exception:
-            pass
-        return None
+    t = threading.Thread(target=_scan_worker, args=([v.pk for v in vinos],), daemon=True)
+    t.start()
 
-    def _guardar(vino, img_url):
-        try:
-            r = http_requests.get(img_url, timeout=8, headers=headers)
-            if r.status_code == 200 and len(r.content) > 4000:
-                ext = img_url.split("?")[0].rsplit(".", 1)[-1].lower()
-                if ext not in ("jpg", "jpeg", "png", "webp", "gif"):
-                    ext = "jpg"
-                from django.core.files.base import ContentFile
-                vino.imagen.save(f"{vino.pk}_scan.{ext}", ContentFile(r.content), save=True)
-                return True
-        except Exception:
-            pass
-        return False
-
-    for vino in vinos:
-        nombre_sin_anyo = re.sub(r'\b(19|20)\d{2}\b', '', vino.nombre).strip()
-        partes_query = [p for p in [nombre_sin_anyo, vino.bodega_nombre] if p]
-        base_query = " ".join(partes_query)
-        descargado = False
-        fuente_usada = None
-
-        time.sleep(2)  # evitar rate limit entre vinos
-
-        try:
-            with DDGS() as ddgs:
-                resultados = list(ddgs.text(
-                    f"{base_query} vino comprar",
-                    max_results=8,
-                    region="es-es",
-                ))
-        except Exception as exc:
-            log.append(f"✗ {nombre_sin_anyo} — error búsqueda: {exc}")
-            sin_resultado += 1
-            continue
-
-        for r in resultados:
-            titulo = r.get("title", "")
-            href = r.get("href", "")
-            if not href:
-                continue
-
-            # Solo guardar si el resultado coincide con suficiente confianza
-            score = _confianza(vino.nombre, vino.bodega_nombre or "", titulo, href)
-            if score < 0.6:
-                continue
-
-            og = _og_de_pagina(href)
-            if og and _guardar(vino, og):
-                ok += 1
-                descargado = True
-                dominio = href.split("/")[2] if "/" in href else href
-                fuente_usada = f"{dominio} ({score:.0%})"
-                break
-
-        if descargado:
-            log.append(f"✓ {nombre_sin_anyo} ({fuente_usada})")
-        else:
-            sin_resultado += 1
-            log.append(f"✗ {nombre_sin_anyo}")
-
-    pendientes = Vino.objects.filter(activo=True, imagen="").count()
-    resumen = f"Escaneo completado — {ok} descargadas, {sin_resultado} sin resultado, {pendientes} pendientes."
-    if log:
-        resumen += " | " + " · ".join(log)
-    if ok:
-        messages.success(request, resumen)
-    else:
-        messages.warning(request, resumen)
     return redirect("core:herramientas")
+
+
+@login_required
+def escanear_estado(request):
+    state = cache.get(SCAN_KEY) or {"status": "idle"}
+    return JsonResponse(state)
 
 

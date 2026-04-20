@@ -12,4 +12,5 @@ urlpatterns = [
     path("anotaciones/<int:pk>/resolver/", views.anotacion_resolver, name="anotacion_resolver"),
     path("anotaciones/<int:pk>/eliminar/", views.anotacion_eliminar, name="anotacion_eliminar"),
     path("herramientas/escanear/", views.escanear_imagenes, name="escanear_imagenes"),
+    path("herramientas/escanear/estado/", views.escanear_estado, name="escanear_estado"),
 ]
