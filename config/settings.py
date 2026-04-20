@@ -26,8 +26,6 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
-    # cloudinary_storage DEBE ir antes que staticfiles para interceptar uploads
-    *(["cloudinary_storage", "cloudinary"] if CLOUDINARY_URL else []),
     "django.contrib.staticfiles",
     # Apps propias
     "core",
