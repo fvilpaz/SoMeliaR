@@ -10,6 +10,7 @@ urlpatterns = [
     path("herramientas/", views.herramientas, name="herramientas"),
     path("anotaciones/", views.anotaciones, name="anotaciones"),
     path("ayuda/", views.ayuda, name="ayuda"),
+    path("herramientas/plantilla/", views.descargar_plantilla, name="descargar_plantilla"),
     path("anotaciones/<int:pk>/resolver/", views.anotacion_resolver, name="anotacion_resolver"),
     path("anotaciones/<int:pk>/eliminar/", views.anotacion_eliminar, name="anotacion_eliminar"),
 ]

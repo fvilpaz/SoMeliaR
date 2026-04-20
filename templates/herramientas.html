@@ -40,27 +40,55 @@
         </div>
     </div>
 
-    <!-- Importar Excel -->
+    <!-- Importar Excel Meliá -->
     <div class="col-md-6">
         <div class="card border-0 shadow-sm h-100">
             <div class="card-header bg-dark text-white">
-                <i class="bi bi-file-earmark-excel me-2"></i>Importar desde Excel
+                <i class="bi bi-file-earmark-excel me-2"></i>Importar Libro de Bodega Meliá
             </div>
             <div class="card-body d-flex flex-column">
                 <p class="text-muted card-note">
-                    Sube el <strong>Libro de Bodega (.xls)</strong> para importar vinos, proveedores y stock.
+                    Sube el <strong>Libro de Bodega (.xls)</strong> original para importar vinos, proveedores y stock.
                     Si ya hay datos, se añaden encima — usa "Limpiar" primero si quieres empezar desde cero.
                 </p>
                 <form method="post" enctype="multipart/form-data" class="mt-auto">
                     {% csrf_token %}
                     <input type="hidden" name="accion" value="importar">
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">Archivo Excel (.xls)</label>
+                        <label class="form-label fw-semibold">Archivo Excel (.xls / .xlsx)</label>
                         <input type="file" name="excel" accept=".xls,.xlsx" class="form-control" required>
-                        <div class="form-text">Formatos válidos: <code>.xls</code> y <code>.xlsx</code> — Excel, LibreOffice y OpenOffice.</div>
                     </div>
                     <button type="submit" class="btn btn-success w-100">
                         <i class="bi bi-upload me-1"></i>Importar datos
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Plantilla estándar -->
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-dark text-white">
+                <i class="bi bi-table me-2"></i>Plantilla estándar (cualquier hotel)
+            </div>
+            <div class="card-body d-flex flex-column">
+                <p class="text-muted card-note">
+                    Descarga la plantilla Excel, rellénala con tus vinos y súbela.
+                    Incluye filas de ejemplo y hoja de referencia con los tipos válidos.
+                </p>
+                <a href="{% url 'core:descargar_plantilla' %}" class="btn btn-outline-primary mb-3">
+                    <i class="bi bi-download me-1"></i>Descargar plantilla vacía
+                </a>
+                <form method="post" enctype="multipart/form-data" class="mt-auto">
+                    {% csrf_token %}
+                    <input type="hidden" name="accion" value="importar_plantilla">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Plantilla rellena (.xlsx)</label>
+                        <input type="file" name="plantilla" accept=".xlsx" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-upload me-1"></i>Importar plantilla
                     </button>
                 </form>
             </div>

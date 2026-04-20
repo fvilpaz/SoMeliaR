@@ -3,7 +3,7 @@
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="mb-0"><i class="bi bi-question-circle me-2"></i>Manual de uso</h4>
+    <h4 class="mb-0"><i class="bi bi-book me-2"></i>Manual de uso</h4>
 </div>
 
 <div class="row g-4">
@@ -13,17 +13,18 @@
         <div class="card border-0 shadow-sm sticky-top" style="top:1.5rem;">
             <div class="card-header bg-dark text-white">Índice</div>
             <div class="list-group list-group-flush small">
-                <a href="#acceso" class="list-group-item list-group-item-action">1. Acceso y perfil</a>
-                <a href="#dashboard" class="list-group-item list-group-item-action">2. Dashboard</a>
-                <a href="#bodega" class="list-group-item list-group-item-action">3. Bodega</a>
-                <a href="#movimientos" class="list-group-item list-group-item-action">4. Movimientos</a>
-                <a href="#rapido" class="list-group-item list-group-item-action">5. Movimiento rápido</a>
-                <a href="#proveedores" class="list-group-item list-group-item-action">6. Proveedores</a>
-                <a href="#pedidos" class="list-group-item list-group-item-action">7. Pedidos</a>
-                <a href="#historico" class="list-group-item list-group-item-action">8. Histórico</a>
-                <a href="#ia" class="list-group-item list-group-item-action">9. IA</a>
-                <a href="#anotaciones" class="list-group-item list-group-item-action">10. Anotaciones</a>
-                <a href="#herramientas" class="list-group-item list-group-item-action">11. Herramientas</a>
+                <a href="#acceso"       class="list-group-item list-group-item-action">1. Acceso y perfil</a>
+                <a href="#navegacion"   class="list-group-item list-group-item-action">2. Navegación</a>
+                <a href="#dashboard"    class="list-group-item list-group-item-action">3. Dashboard</a>
+                <a href="#bodega"       class="list-group-item list-group-item-action">4. Bodega</a>
+                <a href="#movimientos"  class="list-group-item list-group-item-action">5. Movimientos</a>
+                <a href="#rapido"       class="list-group-item list-group-item-action">6. Movimiento rápido</a>
+                <a href="#proveedores"  class="list-group-item list-group-item-action">7. Proveedores</a>
+                <a href="#pedidos"      class="list-group-item list-group-item-action">8. Pedidos</a>
+                <a href="#historico"    class="list-group-item list-group-item-action">9. Histórico</a>
+                <a href="#ia"           class="list-group-item list-group-item-action">10. IA</a>
+                <a href="#anotaciones"  class="list-group-item list-group-item-action">11. Anotaciones</a>
+                <a href="#herramientas" class="list-group-item list-group-item-action">12. Herramientas</a>
             </div>
         </div>
     </div>
@@ -33,17 +34,35 @@
 
         <section id="acceso" class="mb-5">
             <h5 class="border-bottom pb-2"><i class="bi bi-person-circle me-2 text-secondary"></i>1. Acceso y perfil de usuario</h5>
-            <p>Accede con tu usuario y contraseña en la pantalla de inicio.</p>
-            <p>Haz clic en tu nombre o avatar en la parte inferior del menú lateral para acceder a tu perfil. Desde ahí puedes:</p>
+            <p>Accede con tu usuario y contraseña en la pantalla de inicio de sesión.</p>
+            <div class="alert alert-info py-2 small">
+                <i class="bi bi-info-circle me-1"></i>
+                El <strong>primer usuario</strong> que se registre en una instalación nueva obtiene automáticamente permisos de administrador.
+            </div>
+            <p>Haz clic en tu nombre o avatar en la parte inferior del menú lateral para editar tu perfil. Desde ahí puedes:</p>
             <ul>
-                <li><strong>Cambiar tu nombre y apellidos</strong> — aparecerán en el saludo y en los pedidos que envíes.</li>
-                <li><strong>Cambiar tu email</strong> — es la dirección desde la que figuran los pedidos.</li>
-                <li><strong>Subir una foto de perfil</strong> — aparece como avatar en el menú lateral. Si no hay foto, se muestran tus iniciales.</li>
+                <li><strong>Cambiar nombre, apellidos y email</strong> — el email es la dirección desde la que figuran los pedidos enviados a proveedores.</li>
+                <li><strong>Subir o quitar foto de perfil</strong> — aparece como avatar en el menú lateral. Sin foto se muestran tus iniciales.</li>
+                <li><strong>Mostrar foto u iniciales en el sidebar</strong> — activa o desactiva el interruptor <em>"Mostrar foto en el sidebar"</em> según tu preferencia. Con foto puedes elegir verla o ver solo tus iniciales.</li>
             </ul>
         </section>
 
+        <section id="navegacion" class="mb-5">
+            <h5 class="border-bottom pb-2"><i class="bi bi-layout-sidebar me-2 text-secondary"></i>2. Navegación</h5>
+            <p>El menú lateral está siempre visible en pantallas grandes. En móvil o tablet, toca el icono <i class="bi bi-list"></i> de la barra superior para abrirlo.</p>
+            <p>Los enlaces del menú están organizados por colores según su función:</p>
+            <ul>
+                <li><span class="text-info fw-semibold">Anotaciones</span> — notas del sumiller.</li>
+                <li><span style="color:#20c997" class="fw-semibold">Movimiento Rápido</span> — registro ágil de entradas y salidas.</li>
+                <li><span class="text-warning fw-semibold">Analizar Stock (IA)</span> — análisis inteligente de pedidos.</li>
+                <li><span style="color:#a78bfa" class="fw-semibold">Manual</span> — esta página.</li>
+                <li><span style="color:#fb923c" class="fw-semibold">Herramientas</span> — solo visible a administradores.</li>
+            </ul>
+            <p>El logotipo del menú muestra un tooltip a los administradores indicando dónde cambiar la imagen.</p>
+        </section>
+
         <section id="dashboard" class="mb-5">
-            <h5 class="border-bottom pb-2"><i class="bi bi-speedometer2 me-2 text-secondary"></i>2. Dashboard</h5>
+            <h5 class="border-bottom pb-2"><i class="bi bi-speedometer2 me-2 text-secondary"></i>3. Dashboard</h5>
             <p>Pantalla de inicio con un resumen del estado actual de la bodega:</p>
             <ul>
                 <li><strong>Resumen por familia</strong> — número de referencias y stock total agrupado por tipo de vino.</li>
@@ -55,19 +74,19 @@
         </section>
 
         <section id="bodega" class="mb-5">
-            <h5 class="border-bottom pb-2"><i class="bi bi-grid me-2 text-secondary"></i>3. Bodega — catálogo de vinos</h5>
+            <h5 class="border-bottom pb-2"><i class="bi bi-grid me-2 text-secondary"></i>4. Bodega — catálogo de vinos</h5>
             <h6 class="mt-3">Ver el catálogo</h6>
-            <p>Puedes ver los vinos en dos modos: <strong>cuadrícula</strong> (tarjetas con foto y stock) o <strong>lista</strong> (tabla compacta). Usa los botones de familia, el buscador y el desplegable de ordenación para filtrar.</p>
+            <p>Puedes ver los vinos en dos modos: <strong>cuadrícula</strong> (tarjetas con foto y stock) o <strong>lista</strong> (tabla compacta). Usa los filtros de familia, el buscador y el desplegable de ordenación para encontrar cualquier referencia.</p>
             <h6 class="mt-3">Ficha de un vino</h6>
-            <p>Haz clic en el nombre o en el icono ✦ para ver la ficha completa: datos del vino, historial de movimientos, descripción generada por IA y opción de subir foto.</p>
+            <p>Haz clic en el nombre o en la tarjeta para ver la ficha completa: datos del vino, historial de movimientos, descripción generada por IA y opción de subir foto.</p>
             <h6 class="mt-3">Añadir o editar un vino</h6>
             <p>Botón <strong>Nuevo vino</strong> (arriba a la derecha) o icono de lápiz en cada tarjeta.</p>
             <h6 class="mt-3">Foto de un vino</h6>
-            <p>Desde la ficha del vino, en la sección de imagen, sube la foto de la botella o etiqueta. La imagen queda guardada en la nube.</p>
+            <p>Desde la ficha del vino sube la foto de la botella o etiqueta. La imagen se guarda en la nube y persiste entre reinicios del servidor.</p>
         </section>
 
         <section id="movimientos" class="mb-5">
-            <h5 class="border-bottom pb-2"><i class="bi bi-plus-circle me-2 text-secondary"></i>4. Movimientos de stock</h5>
+            <h5 class="border-bottom pb-2"><i class="bi bi-plus-circle me-2 text-secondary"></i>5. Movimientos de stock</h5>
             <p>Cada entrada o salida de botellas se registra como un movimiento. El stock actual es la suma de todos los movimientos.</p>
             <p>Desde la tarjeta de un vino, pulsa <strong>+ Movimiento</strong> e indica tipo (entrada o salida), cantidad y notas opcionales.</p>
             <div class="alert alert-info py-2 small">
@@ -77,17 +96,17 @@
         </section>
 
         <section id="rapido" class="mb-5">
-            <h5 class="border-bottom pb-2"><i class="bi bi-lightning-charge-fill me-2 text-secondary"></i>5. Movimiento rápido</h5>
+            <h5 class="border-bottom pb-2"><i class="bi bi-lightning-charge-fill me-2 text-secondary"></i>6. Movimiento rápido</h5>
             <p>Accesible desde el menú lateral. Permite registrar múltiples movimientos de stock de forma ágil sin entrar en la ficha de cada vino. Ideal para el cierre del día o ajustes tras un servicio.</p>
         </section>
 
         <section id="proveedores" class="mb-5">
-            <h5 class="border-bottom pb-2"><i class="bi bi-truck me-2 text-secondary"></i>6. Proveedores</h5>
+            <h5 class="border-bottom pb-2"><i class="bi bi-truck me-2 text-secondary"></i>7. Proveedores</h5>
             <p>Desde el menú lateral, entra en <strong>Proveedores</strong>. Verás la lista de distribuidores con su email de contacto. En la ficha de cada proveedor puedes ver qué vinos suministra y a qué precio.</p>
         </section>
 
         <section id="pedidos" class="mb-5">
-            <h5 class="border-bottom pb-2"><i class="bi bi-cart me-2 text-secondary"></i>7. Pedidos</h5>
+            <h5 class="border-bottom pb-2"><i class="bi bi-cart me-2 text-secondary"></i>8. Pedidos</h5>
             <p>El flujo de un pedido tiene cuatro estados:</p>
             <div class="d-flex flex-wrap gap-2 mb-3">
                 <span class="badge bg-secondary fs-6">Borrador</span>
@@ -101,45 +120,78 @@
             <ol>
                 <li class="mb-2"><strong>Crear el pedido</strong> — elige proveedor, añade vinos y cantidades. Queda en estado Borrador.</li>
                 <li class="mb-2"><strong>Revisar</strong> — edita las líneas hasta que el pedido esté listo. Cámbialo a Pendiente.</li>
-                <li class="mb-2"><strong>Enviar por email</strong> — pulsa <em>Enviar pedido</em>. La app genera el texto automáticamente, puedes revisarlo y editarlo antes de confirmar. Nunca se envía sin tu aprobación.</li>
+                <li class="mb-2"><strong>Enviar por email</strong> — pulsa <em>Enviar pedido</em>. La app genera el texto automáticamente; puedes revisarlo y editarlo antes de confirmar. Nunca se envía sin tu aprobación.</li>
                 <li class="mb-2"><strong>Recibir mercancía</strong> — cuando llegue el pedido, pulsa <em>Marcar como recibido</em>. El sistema registra automáticamente las entradas de stock.</li>
             </ol>
             <div class="alert alert-info py-2 small">
                 <i class="bi bi-envelope me-1"></i>
-                El correo se envía desde el email de tu perfil de usuario al email del proveedor.
+                El correo se envía desde el email de tu perfil al email del proveedor.
             </div>
         </section>
 
         <section id="historico" class="mb-5">
-            <h5 class="border-bottom pb-2"><i class="bi bi-calendar3 me-2 text-secondary"></i>8. Histórico de pedidos</h5>
+            <h5 class="border-bottom pb-2"><i class="bi bi-calendar3 me-2 text-secondary"></i>9. Histórico de pedidos</h5>
             <p>Muestra todos los pedidos completados ordenados por fecha. Despliega cada pedido para ver el detalle de las líneas.</p>
         </section>
 
         <section id="ia" class="mb-5">
-            <h5 class="border-bottom pb-2"><i class="bi bi-robot me-2 text-secondary"></i>9. Analizar Stock con IA</h5>
+            <h5 class="border-bottom pb-2"><i class="bi bi-robot me-2 text-secondary"></i>10. Analizar Stock con IA</h5>
             <p>Desde el menú lateral, <strong>Analizar Stock (IA)</strong>. La inteligencia artificial analiza el stock actual, detecta referencias próximas al mínimo y sugiere qué pedir y en qué cantidades. Genera un borrador de pedido que puedes revisar y ajustar antes de enviar.</p>
             <h6 class="mt-3">Descripción de un vino</h6>
-            <p>En la ficha de cada vino, el botón <strong>Generar descripción</strong> crea automáticamente una descripción de cata en español. Se guarda y no es necesario regenerarla cada vez.</p>
+            <p>En la ficha de cada vino, el botón <strong>Generar descripción</strong> crea automáticamente una descripción de cata en español. Se guarda y no es necesario regenerarla cada vez. Si quieres actualizarla, pulsa <strong>Regenerar</strong>.</p>
         </section>
 
         <section id="anotaciones" class="mb-5">
-            <h5 class="border-bottom pb-2"><i class="bi bi-journal-text me-2 text-secondary"></i>10. Anotaciones del sumiller</h5>
+            <h5 class="border-bottom pb-2"><i class="bi bi-journal-text me-2 text-secondary"></i>11. Anotaciones del sumiller</h5>
             <p>Espacio para dejar notas rápidas: incidencias, recordatorios, observaciones sobre un servicio.</p>
             <ul>
-                <li><strong>Nueva anotación</strong> — escribe el texto y elige la prioridad (normal, alta).</li>
+                <li><strong>Nueva anotación</strong> — escribe el texto y elige la prioridad (normal, alta, urgente).</li>
                 <li><strong>Dictado por voz</strong> — pulsa el icono del micrófono para dictar con la voz (requiere permiso del navegador).</li>
                 <li><strong>Resolver</strong> — archiva una anotación completada.</li>
             </ul>
         </section>
 
         <section id="herramientas" class="mb-5">
-            <h5 class="border-bottom pb-2"><i class="bi bi-tools me-2 text-secondary"></i>11. Herramientas <span class="badge bg-danger ms-1" style="font-size:.65rem;">Solo admin</span></h5>
-            <ul>
-                <li class="mb-2"><strong>Importar desde Excel</strong> — sube el Libro de Bodega en <code>.xls</code> o <code>.xlsx</code>. Importa vinos, proveedores y stock inicial.</li>
-                <li class="mb-2"><strong>Logo del sidebar</strong> — imagen cuadrada que aparece en el menú lateral.</li>
-                <li class="mb-2"><strong>Imagen de login</strong> — foto circular en la pantalla de inicio de sesión.</li>
-                <li class="mb-2"><strong>Limpiar base de datos</strong> — elimina todos los datos de bodega (no borra usuarios). Úsalo solo antes de reimportar un Excel nuevo.</li>
-            </ul>
+            <h5 class="border-bottom pb-2"><i class="bi bi-tools me-2 text-secondary"></i>12. Herramientas <span class="badge bg-danger ms-1" style="font-size:.65rem;">Solo admin</span></h5>
+
+            <h6 class="mt-3">Importar Libro de Bodega Meliá</h6>
+            <p>Sube el archivo <code>.xls</code> o <code>.xlsx</code> del Libro de Bodega original. Importa vinos, proveedores, stock inicial y pedidos pendientes. Si ya hay datos en la base de datos se añaden encima — usa <em>Limpiar</em> primero si quieres empezar desde cero.</p>
+
+            <h6 class="mt-3">Plantilla estándar</h6>
+            <p>Para hoteles que no usen el formato Meliá: descarga la plantilla Excel, rellénala con tus vinos y súbela. La plantilla incluye filas de ejemplo y una hoja de referencia con los tipos de vino aceptados.</p>
+            <p>Columnas de la plantilla:</p>
+            <div class="table-responsive">
+                <table class="table table-sm table-bordered small">
+                    <thead class="table-dark">
+                        <tr><th>Columna</th><th>Obligatoria</th><th>Descripción</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Nombre</td><td><i class="bi bi-check-circle-fill text-success"></i></td><td>Nombre del vino</td></tr>
+                        <tr><td>Bodega</td><td></td><td>Nombre de la bodega o productor</td></tr>
+                        <tr><td>Tipo</td><td><i class="bi bi-check-circle-fill text-success"></i></td><td>Familia del vino (ver hoja «Tipos válidos» de la plantilla)</td></tr>
+                        <tr><td>D.O.</td><td></td><td>Denominación de Origen</td></tr>
+                        <tr><td>Variedades</td><td></td><td>Uvas (ej: Tempranillo, Garnacha)</td></tr>
+                        <tr><td>Precio Coste</td><td></td><td>Precio de compra (€)</td></tr>
+                        <tr><td>Precio Carta</td><td></td><td>Precio de venta (€)</td></tr>
+                        <tr><td>Stock Inicial</td><td></td><td>Botellas en bodega al importar</td></tr>
+                        <tr><td>Stock Mínimo</td><td></td><td>Alerta cuando baje de este valor (defecto: 6)</td></tr>
+                        <tr><td>Stock Óptimo</td><td></td><td>Nivel de reposición ideal (defecto: 12)</td></tr>
+                        <tr><td>Proveedor</td><td></td><td>Nombre del distribuidor</td></tr>
+                        <tr><td>Email Proveedor</td><td></td><td>Email para envío de pedidos</td></tr>
+                        <tr><td>Se vende por copas</td><td></td><td>Sí / No</td></tr>
+                        <tr><td>Precio Copa</td><td></td><td>Precio por copa en carta (€)</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h6 class="mt-3">Logo del sidebar</h6>
+            <p>Imagen cuadrada que aparece en el menú lateral. Recomendado: 200×200 px o superior. Si no hay logo subido se muestra un icono de copa de vino por defecto. Botón <em>Restaurar imagen por defecto</em> para volver al icono.</p>
+
+            <h6 class="mt-3">Imagen de login</h6>
+            <p>Foto que aparece en la pantalla de inicio de sesión. Si no hay imagen se muestra una copa de vino por defecto. Botón <em>Restaurar imagen por defecto</em> para volver al icono.</p>
+
+            <h6 class="mt-3">Limpiar base de datos</h6>
+            <p>Elimina todos los vinos, movimientos, proveedores, pedidos y anotaciones. Los usuarios <strong>no</strong> se borran. Úsalo solo antes de reimportar datos desde cero.</p>
             <div class="alert alert-warning py-2 small">
                 <i class="bi bi-exclamation-triangle me-1"></i>
                 La limpieza de base de datos no se puede deshacer.
