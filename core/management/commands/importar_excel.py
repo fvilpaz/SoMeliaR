@@ -198,7 +198,6 @@ class Command(BaseCommand):
         self._vincular_proveedores(wb, vinos_map, proveedores)
         self._marcar_copas(wb, vinos_map)
         self._importar_pedidos(wb, vinos_map, proveedores)
-        self._crear_admin()
 
         self.stdout.write("")
         self.stdout.write("=" * 60)
@@ -464,13 +463,6 @@ class Command(BaseCommand):
                         precio_unitario=lp["precio"],
                     )
                 self.stdout.write(f"  Pedido {prov.nombre}: {len(lineas_pedido)} líneas")
-
-    def _crear_admin(self):
-        from django.contrib.auth.models import User
-        if not User.objects.filter(username="admin").exists():
-            User.objects.create_superuser("admin", "admin@someliar.demo", "admin")
-            self.stdout.write("\n  Superusuario creado: admin / admin")
-
 
 def _buscar_vino(vinos_map, nombre):
     """Búsqueda tolerante: coincidencia parcial bidireccional."""

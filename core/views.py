@@ -219,6 +219,22 @@ def herramientas(request):
                 config.save()
                 messages.success(request, "Imagen de login actualizada.")
             return redirect("core:herramientas")
+        elif accion == "borrar_logo":
+            config = Configuracion.get()
+            if config.logo:
+                config.logo.delete(save=False)
+                config.logo = ""
+                config.save()
+                messages.success(request, "Logo eliminado. Se mostrará la imagen por defecto.")
+            return redirect("core:herramientas")
+        elif accion == "borrar_login_imagen":
+            config = Configuracion.get()
+            if config.login_imagen:
+                config.login_imagen.delete(save=False)
+                config.login_imagen = ""
+                config.save()
+                messages.success(request, "Imagen de login eliminada. Se mostrará la imagen por defecto.")
+            return redirect("core:herramientas")
 
     return render(request, "herramientas.html", {"stats": stats})
 
@@ -229,7 +245,12 @@ def registro(request):
     if request.method == "POST":
         form = RegistroForm(request.POST)
         if form.is_valid():
-            user = form.save()
+            from django.contrib.auth.models import User
+            user = form.save(commit=False)
+            if not User.objects.exists():
+                user.is_staff = True
+                user.is_superuser = True
+            user.save()
             login(request, user)
             messages.success(request, f"¡Bienvenido, {user.first_name or user.username}! Cuenta creada correctamente.")
             return redirect("core:dashboard")
@@ -249,6 +270,13 @@ def perfil(request):
             if avatar_form.is_valid():
                 avatar_form.save()
                 messages.success(request, "Foto de perfil actualizada.")
+            return redirect("core:perfil")
+        elif accion == "borrar_avatar":
+            if perfil_obj.avatar:
+                perfil_obj.avatar.delete(save=False)
+                perfil_obj.avatar = ""
+                perfil_obj.save()
+                messages.success(request, "Foto eliminada.")
             return redirect("core:perfil")
         else:
             form = PerfilForm(request.POST, instance=request.user)

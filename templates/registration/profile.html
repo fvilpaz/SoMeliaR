@@ -31,6 +31,17 @@
                         title="Cambiar foto de perfil">
                     <i class="bi bi-pencil-fill" style="font-size:.6rem;"></i>
                 </button>
+                {% if user_perfil and user_perfil.avatar %}
+                <form method="post" class="position-absolute top-0 start-0">
+                    {% csrf_token %}
+                    <input type="hidden" name="accion" value="borrar_avatar">
+                    <button type="submit" class="btn btn-danger btn-sm rounded-circle p-1"
+                            title="Quitar foto"
+                            style="width:22px;height:22px;font-size:.55rem;line-height:1;">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </form>
+                {% endif %}
             </div>
             <div>
                 <h4 class="mb-0">{{ request.user.get_full_name|default:request.user.username }}</h4>

@@ -112,7 +112,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link sidebar-link text-danger" href="{% url 'core:herramientas' %}">
+                        <a class="nav-link sidebar-link sidebar-link--tools" href="{% url 'core:herramientas' %}">
                             <i class="bi bi-tools"></i><span>Herramientas</span>
                         </a>
                     </li>
@@ -125,15 +125,19 @@
                         style="min-width:0;">
                         {% if user_perfil and user_perfil.avatar %}
                         <img src="{{ user_perfil.avatar.url }}" alt="" class="sidebar-user-avatar"
-                             onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                            onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
                         <div class="sidebar-user-avatar bg-secondary text-white fw-bold flex-shrink-0"
-                             style="display:none;align-items:center;justify-content:center;font-size:1.1rem;letter-spacing:-.5px;">
-                            {{ request.user.first_name|slice:":1"|upper }}{{ request.user.last_name|slice:":1"|upper }}{% if not request.user.first_name %}{{ request.user.username|slice:":2"|upper }}{% endif %}
+                            style="display:none;align-items:center;justify-content:center;font-size:1.1rem;letter-spacing:-.5px;">
+                            {{ request.user.first_name|slice:":1"|upper }}{{ request.user.last_name|slice:":1"|upper
+                            }}{% if not request.user.first_name %}{{ request.user.username|slice:":2"|upper }}{% endif
+                            %}
                         </div>
                         {% else %}
                         <div class="sidebar-user-avatar bg-secondary text-white fw-bold flex-shrink-0"
-                             style="display:flex;align-items:center;justify-content:center;font-size:1.1rem;letter-spacing:-.5px;">
-                            {{ request.user.first_name|slice:":1"|upper }}{{ request.user.last_name|slice:":1"|upper }}{% if not request.user.first_name %}{{ request.user.username|slice:":2"|upper }}{% endif %}
+                            style="display:flex;align-items:center;justify-content:center;font-size:1.1rem;letter-spacing:-.5px;">
+                            {{ request.user.first_name|slice:":1"|upper }}{{ request.user.last_name|slice:":1"|upper
+                            }}{% if not request.user.first_name %}{{ request.user.username|slice:":2"|upper }}{% endif
+                            %}
                         </div>
                         {% endif %}
                         <div style="min-width:0;">

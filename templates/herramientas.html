@@ -92,6 +92,15 @@
                         <i class="bi bi-upload me-1"></i>Subir logo
                     </button>
                 </form>
+                {% if app_config.logo %}
+                <form method="post" class="mt-2">
+                    {% csrf_token %}
+                    <input type="hidden" name="accion" value="borrar_logo">
+                    <button type="submit" class="btn btn-outline-secondary btn-sm w-100">
+                        <i class="bi bi-x-circle me-1"></i>Restaurar imagen por defecto
+                    </button>
+                </form>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -121,6 +130,15 @@
                         <i class="bi bi-upload me-1"></i>Subir imagen
                     </button>
                 </form>
+                {% if app_config.login_imagen %}
+                <form method="post" class="mt-2">
+                    {% csrf_token %}
+                    <input type="hidden" name="accion" value="borrar_login_imagen">
+                    <button type="submit" class="btn btn-outline-secondary btn-sm w-100">
+                        <i class="bi bi-x-circle me-1"></i>Restaurar imagen por defecto
+                    </button>
+                </form>
+                {% endif %}
             </div>
         </div>
     </div>
