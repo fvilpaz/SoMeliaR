@@ -1,216 +1,221 @@
-# Manual de Uso — SoMeliaR 🍷
+<div align="right">
+  <img src="https://img.shields.io/badge/EN-1a6fc4?style=flat-square" alt="English">
+  &nbsp;<a href="MANUAL.es.md"><img src="https://img.shields.io/badge/ES-555555?style=flat-square" alt="Español"></a>
+</div>
 
-Guía completa para sumilleres y gestores de bodega.
+# User Manual — SoMeliaR 🍷
+
+Complete guide for sommeliers and cellar managers.
 
 ---
 
-## Índice
+## Table of contents
 
-1. [Acceso y perfil de usuario](#1-acceso-y-perfil-de-usuario)
+1. [Access and user profile](#1-access-and-user-profile)
 2. [Dashboard](#2-dashboard)
-3. [Bodega — catálogo de vinos](#3-bodega--catálogo-de-vinos)
-4. [Movimientos de stock](#4-movimientos-de-stock)
-5. [Movimiento rápido](#5-movimiento-rápido)
-6. [Proveedores](#6-proveedores)
-7. [Pedidos](#7-pedidos)
-8. [Histórico de pedidos](#8-histórico-de-pedidos)
-9. [Analizar Stock con IA](#9-analizar-stock-con-ia)
-10. [Anotaciones del sumiller](#10-anotaciones-del-sumiller)
-11. [Herramientas (solo administrador)](#11-herramientas-solo-administrador)
+3. [Cellar — wine catalogue](#3-cellar--wine-catalogue)
+4. [Stock movements](#4-stock-movements)
+5. [Quick movement](#5-quick-movement)
+6. [Suppliers](#6-suppliers)
+7. [Orders](#7-orders)
+8. [Order history](#8-order-history)
+9. [Analyse Stock with AI](#9-analyse-stock-with-ai)
+10. [Sommelier notes](#10-sommelier-notes)
+11. [Tools (administrator only)](#11-tools-administrator-only)
 
 ---
 
-## 1. Acceso y perfil de usuario
+## 1. Access and user profile
 
-### Iniciar sesión
-Accede con tu usuario y contraseña en la pantalla de inicio.
+### Log in
+Access the app with your username and password on the login screen.
 
-### Tu perfil
-Haz clic en tu nombre o avatar en la parte inferior del menú lateral para acceder a tu perfil. Desde ahí puedes:
+### Your profile
+Click your name or avatar at the bottom of the side menu to access your profile. From there you can:
 
-- **Cambiar tu nombre y apellidos** — aparecerán en el saludo y en los pedidos que envíes.
-- **Cambiar tu email** — es la dirección desde la que figuran los pedidos.
-- **Subir una foto de perfil** — aparece como avatar en el menú lateral. Si no hay foto, se muestran tus iniciales.
+- **Change your first and last name** — they will appear in the greeting and in the orders you send.
+- **Change your email** — this is the address shown as the sender on orders.
+- **Upload a profile picture** — it appears as your avatar in the side menu. If there is no photo, your initials are shown instead.
 
 ---
 
 ## 2. Dashboard
 
-Pantalla de inicio con un resumen del estado actual de la bodega:
+Home screen with a summary of the current state of the cellar:
 
-- **Resumen por familia** — número de referencias y stock total agrupado por tipo de vino (tintos nacionales, blancos, espumosos, etc.).
-- **Alertas de stock mínimo** — lista de vinos cuyo stock actual está por debajo del mínimo configurado. Son los candidatos a pedir.
-- **Pedidos pendientes** — acceso rápido a pedidos en estado borrador o pendiente.
-- **Valor del inventario** — valor total del stock al precio de coste.
-- **Gráfico de stock** — distribución visual por familia.
-
----
-
-## 3. Bodega — catálogo de vinos
-
-### Ver el catálogo
-Desde el menú lateral, entra en **Bodega**. Puedes ver los vinos en dos modos:
-- **Vista cuadrícula** — tarjetas con foto, stock y precio.
-- **Vista lista** — tabla compacta, útil en pantallas pequeñas.
-
-### Filtrar y buscar
-- Usa los botones de familia (Tinto Nacional, Blanco, Espumoso...) para filtrar.
-- Escribe en el buscador para filtrar por nombre, bodega o denominación de origen.
-- Ordena por nombre, familia o stock con el desplegable.
-
-### Ficha de un vino
-Haz clic en el nombre o en el icono ✦ de una tarjeta para ver la ficha completa. Contiene:
-- Todos los datos del vino (bodega, D.O., variedades, precios, ubicaciones donde se sirve).
-- Historial de los últimos movimientos de stock.
-- Sección de descripción generada por IA (ver apartado 9).
-- Formulario para subir la foto de la botella manualmente.
-
-### Añadir un vino nuevo
-Botón **Nuevo vino** (arriba a la derecha). Rellena los datos y guarda.
-
-### Editar un vino
-Icono de lápiz en la tarjeta o en la ficha. Puedes modificar todos los datos, incluida la foto.
-
-### Subir la foto de un vino
-Desde la ficha del vino, en la sección de imagen, sube la foto de la botella o etiqueta. La imagen queda guardada en la nube y es visible para todos los usuarios.
+- **Summary by family** — number of references and total stock grouped by wine type (domestic reds, whites, sparkling, etc.).
+- **Minimum stock alerts** — list of wines whose current stock is below the configured minimum. These are the candidates for ordering.
+- **Pending orders** — quick access to orders in draft or pending status.
+- **Inventory value** — total stock value at cost price.
+- **Stock chart** — visual distribution by family.
 
 ---
 
-## 4. Movimientos de stock
+## 3. Cellar — wine catalogue
 
-Cada entrada o salida de botellas se registra como un movimiento. El stock actual es la suma de todos los movimientos.
+### View the catalogue
+From the side menu, go to **Cellar**. You can view the wines in two modes:
+- **Grid view** — cards with photo, stock and price.
+- **List view** — compact table, useful on small screens.
 
-### Registrar un movimiento
-Desde la tarjeta de un vino, pulsa **+ Movimiento**. Indica:
-- **Tipo**: entrada (compra, devolución) o salida (consumo, rotura, merma).
-- **Cantidad**: número de botellas.
-- **Notas**: opcional, para dejar constancia del motivo.
+### Filter and search
+- Use the family buttons (Domestic Red, White, Sparkling...) to filter.
+- Type in the search bar to filter by name, winery or denomination of origin.
+- Sort by name, family or stock using the dropdown.
 
-### Stock mínimo
-Cada vino puede tener configurado un stock mínimo. Cuando el stock actual cae por debajo, aparece una alerta en el dashboard y la tarjeta se marca en rojo.
+### Wine detail page
+Click on the name or the ✦ icon on a card to view the full detail page. It contains:
+- All the wine's data (winery, D.O., grape varieties, prices, locations where it is served).
+- History of the most recent stock movements.
+- AI-generated description section (see section 9).
+- Form to upload the bottle photo manually.
 
----
+### Add a new wine
+Click the **New wine** button (top right). Fill in the data and save.
 
-## 5. Movimiento rápido
+### Edit a wine
+Click the pencil icon on the card or on the detail page. You can modify all the data, including the photo.
 
-Accesible desde el menú lateral. Permite registrar múltiples movimientos de stock de forma ágil sin tener que entrar en la ficha de cada vino. Ideal para el cierre del día o para ajustes rápidos tras un servicio.
-
----
-
-## 6. Proveedores
-
-### Ver proveedores
-Desde el menú lateral, entra en **Proveedores**. Verás la lista de distribuidores con su email de contacto.
-
-### Añadir o editar un proveedor
-Desde el listado, botón **Nuevo proveedor** o el lápiz de edición.
-
-### Vinos asociados a un proveedor
-En la ficha de cada proveedor puedes ver qué vinos suministra y a qué precio.
+### Upload a wine photo
+From the wine's detail page, in the image section, upload the photo of the bottle or label. The image is saved in the cloud and is visible to all users.
 
 ---
 
-## 7. Pedidos
+## 4. Stock movements
 
-El flujo de un pedido tiene cuatro estados: **Borrador → Pendiente → Enviado → Recibido**.
+Every bottle entry or exit is recorded as a movement. The current stock is the sum of all movements.
 
-### Crear un pedido
-1. Entra en **Pedidos → Nuevo pedido**.
-2. Elige el proveedor.
-3. Añade las líneas de pedido: selecciona cada vino y la cantidad a pedir.
-4. El pedido se guarda en estado **Borrador**.
+### Record a movement
+From a wine card, click **+ Movement**. Specify:
+- **Type**: entry (purchase, return) or exit (consumption, breakage, shrinkage).
+- **Quantity**: number of bottles.
+- **Notes**: optional, to record the reason.
 
-### Revisar y confirmar
-Desde la ficha del pedido, puedes editar las líneas, añadir o quitar vinos. Cuando esté listo, cámbialo a estado **Pendiente**.
-
-### Enviar el pedido por email
-Cuando el pedido está en estado Pendiente, aparece el botón **Enviar pedido**. Al pulsarlo:
-1. La aplicación genera automáticamente el texto del email con el detalle de los vinos y cantidades.
-2. Puedes revisar y editar el texto antes de enviarlo.
-3. Confirmas el envío y el email se manda al proveedor.
-4. El pedido pasa a estado **Enviado**.
-
-> El correo se envía desde el email configurado en tu perfil de usuario. Siempre puedes ver el borrador antes de enviarlo, nunca se manda sin tu confirmación.
-
-### Registrar la recepción
-Cuando llegue la mercancía, entra en el pedido y pulsa **Marcar como recibido**. El sistema registra automáticamente las entradas de stock para cada vino del pedido.
+### Minimum stock
+Each wine can have a minimum stock configured. When the current stock falls below it, an alert appears on the dashboard and the card is highlighted in red.
 
 ---
 
-## 8. Histórico de pedidos
+## 5. Quick movement
 
-Accesible desde **Histórico** en el menú lateral. Muestra todos los pedidos completados (estado Recibido) organizados por fecha. Puedes desplegar cada pedido para ver su detalle.
-
----
-
-## 9. Analizar Stock con IA
-
-Desde el menú lateral, **Analizar Stock (IA)**. La aplicación utiliza inteligencia artificial (Google Gemini) para:
-
-- Analizar el stock actual de todos los vinos.
-- Detectar qué referencias están próximas al mínimo o agotadas.
-- Sugerir qué pedir y en qué cantidades, teniendo en cuenta el histórico de consumo.
-- Generar un borrador de pedido automático que puedes revisar y ajustar antes de enviar.
-
-### Descripción de un vino con IA
-En la ficha de cada vino, el botón **Generar descripción** crea automáticamente una descripción de cata en español para ese vino. La descripción se guarda y no es necesario regenerarla cada vez (aunque puedes forzar una nueva si quieres actualizarla).
+Accessible from the side menu. Allows you to record multiple stock movements quickly without having to open each wine's detail page. Ideal for end-of-day closing or for quick adjustments after a service.
 
 ---
 
-## 10. Anotaciones del sumiller
+## 6. Suppliers
 
-Accesible desde **Anotaciones** en el menú lateral. Espacio para dejar notas rápidas: incidencias, recordatorios, observaciones sobre un servicio.
+### View suppliers
+From the side menu, go to **Suppliers**. You will see the list of distributors with their contact email.
 
-- **Nueva anotación**: escribe el texto y elige la prioridad (normal, alta).
-- **Dictado por voz**: pulsa el icono del micrófono para dictar la anotación con la voz (requiere permiso del navegador).
-- **Resolver**: marca una anotación como resuelta para archivarla.
-- **Eliminar**: borra una anotación que ya no es necesaria.
+### Add or edit a supplier
+From the list, click **New supplier** or the edit pencil.
 
----
-
-## 11. Herramientas (solo administrador)
-
-Esta sección solo es visible para usuarios con rol de administrador (superusuario).
-
-### Importar desde Excel
-Sube el **Libro de Bodega** en formato `.xls` o `.xlsx`. El sistema importa automáticamente:
-- Todos los vinos con sus datos (nombre, bodega, D.O., precios, etc.).
-- Proveedores y relación con los vinos.
-- Stock inicial de cada referencia.
-
-> Si ya hay datos en el sistema, la importación los añade encima. Si quieres empezar desde cero, usa primero la opción **Limpiar base de datos**.
-
-### Logo del sidebar
-Sube una imagen cuadrada (mínimo 200×200 px) que aparecerá en el menú lateral en lugar del logo por defecto. Recomendado: el logo del hotel o del departamento de F&B.
-
-### Imagen de login
-Sube la foto que aparece como logo circular en la pantalla de inicio de sesión.
-
-### Limpiar base de datos
-Elimina **todos los vinos, movimientos, proveedores, pedidos y anotaciones**. Los usuarios no se borran. Úsalo solo si vas a reimportar un Excel completamente nuevo.
-
-> Esta acción no se puede deshacer. El sistema pedirá confirmación antes de ejecutarla.
+### Wines linked to a supplier
+On each supplier's detail page you can see which wines they supply and at what price.
 
 ---
 
-## Preguntas frecuentes
+## 7. Orders
 
-**¿Puedo usar la app desde el móvil?**
-Sí. El diseño es completamente responsive. En móvil, el menú lateral se abre con el botón de las tres rayas (☰) en la esquina superior izquierda.
+An order goes through four statuses: **Draft → Pending → Sent → Received**.
 
-**¿Las fotos de los vinos se pierden si se actualiza el sistema?**
-No. Las imágenes se almacenan en Cloudinary, un servicio externo. No dependen del servidor y persisten siempre.
+### Create an order
+1. Go to **Orders → New order**.
+2. Choose the supplier.
+3. Add order lines: select each wine and the quantity to order.
+4. The order is saved in **Draft** status.
 
-**¿Quién recibe el email del pedido?**
-El email del pedido se envía a la dirección del proveedor configurada en su ficha. El remitente es el usuario que realiza el envío.
+### Review and confirm
+From the order page, you can edit the lines, add or remove wines. When it is ready, change it to **Pending** status.
 
-**¿Qué pasa si el análisis de IA no está disponible?**
-Si no hay conexión o la API de Gemini no responde, el sistema mostrará un mensaje de error y podrás gestionar el pedido manualmente.
+### Send the order by email
+When the order is in Pending status, the **Send order** button appears. When you click it:
+1. The application automatically generates the email text with the details of the wines and quantities.
+2. You can review and edit the text before sending.
+3. You confirm the send and the email is sent to the supplier.
+4. The order moves to **Sent** status.
 
-**¿Cómo configuro el stock mínimo de un vino?**
-Desde la ficha del vino, en la sección de edición, encontrarás el campo **Stock mínimo**. Cuando el stock caiga por debajo de ese valor, aparecerá una alerta en el dashboard.
+> The email is sent from the email address configured in your user profile. You can always review the draft before sending — it is never sent without your confirmation.
+
+### Record the receipt
+When the goods arrive, go to the order and click **Mark as received**. The system automatically records stock entries for each wine in the order.
 
 ---
 
-*Manual elaborado para SoMeliaR — Meliá Hotels International.*
-*Desarrollado por Fernando Vilas Paz.*
+## 8. Order history
+
+Accessible from **History** in the side menu. Shows all completed orders (Received status) organised by date. You can expand each order to view its details.
+
+---
+
+## 9. Analyse Stock with AI
+
+From the side menu, **Analyse Stock (AI)**. The application uses artificial intelligence (Google Gemini) to:
+
+- Analyse the current stock of all wines.
+- Detect which references are close to the minimum or out of stock.
+- Suggest what to order and in what quantities, taking into account the consumption history.
+- Generate an automatic draft order that you can review and adjust before sending.
+
+### Wine description with AI
+On each wine's detail page, the **Generate description** button automatically creates a tasting description in Spanish for that wine. The description is saved and does not need to be regenerated every time (although you can force a new one if you want to update it).
+
+---
+
+## 10. Sommelier notes
+
+Accessible from **Notes** in the side menu. A space to leave quick notes: incidents, reminders, observations about a service.
+
+- **New note**: write the text and choose the priority (normal, high).
+- **Voice dictation**: click the microphone icon to dictate the note by voice (requires browser permission).
+- **Resolve**: mark a note as resolved to archive it.
+- **Delete**: delete a note that is no longer needed.
+
+---
+
+## 11. Tools (administrator only)
+
+This section is only visible to users with the administrator role (superuser).
+
+### Import from Excel
+Upload the **Cellar Book** in `.xls` or `.xlsx` format. The system automatically imports:
+- All wines with their data (name, winery, D.O., prices, etc.).
+- Suppliers and their relationship with the wines.
+- Initial stock for each reference.
+
+> If there is already data in the system, the import adds on top of it. If you want to start from scratch, use the **Clear database** option first.
+
+### Sidebar logo
+Upload a square image (minimum 200×200 px) that will appear in the side menu in place of the default logo. Recommended: the hotel logo or the F&B department logo.
+
+### Login image
+Upload the photo that appears as the circular logo on the login screen.
+
+### Clear database
+Deletes **all wines, movements, suppliers, orders and notes**. Users are not deleted. Use this only if you are going to re-import a completely new Excel file.
+
+> This action cannot be undone. The system will ask for confirmation before executing it.
+
+---
+
+## Frequently asked questions
+
+**Can I use the app from my phone?**
+Yes. The design is fully responsive. On mobile, the side menu opens with the hamburger button (☰) in the top-left corner.
+
+**Are the wine photos lost if the system is updated?**
+No. The images are stored on Cloudinary, an external service. They do not depend on the server and persist at all times.
+
+**Who receives the order email?**
+The order email is sent to the supplier's address configured in their profile. The sender is the user who performs the send.
+
+**What happens if the AI analysis is unavailable?**
+If there is no connection or the Gemini API does not respond, the system will display an error message and you will be able to manage the order manually.
+
+**How do I configure the minimum stock for a wine?**
+From the wine's detail page, in the editing section, you will find the **Minimum stock** field. When the stock falls below that value, an alert will appear on the dashboard.
+
+---
+
+*Manual created for SoMeliaR — Meliá Hotels International.*  
+*Developed by Fernando Vilas Paz.*
