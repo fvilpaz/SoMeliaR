@@ -1,111 +1,116 @@
+<div align="right">
+  <img src="https://img.shields.io/badge/EN-1a6fc4?style=flat-square" alt="English">
+  &nbsp;<a href="README.es.md"><img src="https://img.shields.io/badge/ES-555555?style=flat-square" alt="Español"></a>
+</div>
+
 # SoMeliaR 🍷
 
-Sistema de gestión de bodega con IA para Meliá Hotels International.
+AI-powered cellar management system for Meliá Hotels International.
 
-Desarrollado por **Fernando Vilas Paz**.
-
----
-
-## Qué es
-
-Aplicación web Django para la gestión integral de la bodega de un hotel: inventario de vinos, control de stock, pedidos a proveedores, análisis de reposición con IA y anotaciones del sumiller.
+Developed by **Fernando Vilas Paz**.
 
 ---
 
-## Stack tecnológico
+## What it is
 
-| Capa | Tecnología |
+Django web application for comprehensive hotel cellar management: wine inventory, stock control, supplier orders, AI-powered restocking analysis, and sommelier notes.
+
+---
+
+## Tech stack
+
+| Layer | Technology |
 |---|---|
 | Backend | Django 5.2 |
-| Base de datos | SQLite (desarrollo) |
+| Database | SQLite (development) |
 | Frontend | Bootstrap 5.3 + HTMX |
-| IA | Google Gemini 2.5 Flash |
+| AI | Google Gemini 2.5 Flash |
 | Media storage | Cloudinary |
-| Servidor | Gunicorn + Render |
-| Estáticos | WhiteNoise |
+| Server | Gunicorn + Render |
+| Static files | WhiteNoise |
 
 ---
 
-## Estructura del proyecto
+## Project structure
 
 ```
 SoMeliaR/
-├── config/          # Settings, URLs raíz, WSGI
-├── core/            # Dashboard, perfil, anotaciones, herramientas
-├── bodega/          # Vinos, movimientos, stock
-├── pedidos/         # Pedidos, líneas, análisis IA
-├── proveedores/     # Proveedores y relación con vinos
-├── templates/       # Templates HTML
-├── static/          # CSS, JS, imágenes
-└── media/           # Archivos subidos (local; Cloudinary en producción)
+├── config/          # Settings, root URLs, WSGI
+├── core/            # Dashboard, profile, notes, tools
+├── bodega/          # Wines, movements, stock
+├── pedidos/         # Orders, lines, AI analysis
+├── proveedores/     # Suppliers and their relationship with wines
+├── templates/       # HTML templates
+├── static/          # CSS, JS, images
+└── media/           # Uploaded files (local; Cloudinary in production)
 ```
 
 ---
 
-## Variables de entorno
+## Environment variables
 
-| Variable | Descripción | Obligatoria en prod |
+| Variable | Description | Required in prod |
 |---|---|---|
-| `SECRET_KEY` | Clave secreta Django | Sí |
-| `DEBUG` | `False` en producción | Sí |
-| `GEMINI_API_KEY` | Clave API Google AI Studio | Sí |
-| `CLOUDINARY_URL` | `cloudinary://key:secret@cloud_name` | Sí |
+| `SECRET_KEY` | Django secret key | Yes |
+| `DEBUG` | `False` in production | Yes |
+| `GEMINI_API_KEY` | Google AI Studio API key | Yes |
+| `CLOUDINARY_URL` | `cloudinary://key:secret@cloud_name` | Yes |
 
 ---
 
-## Instalación local
+## Local installation
 
 ```bash
-# Clonar y entrar
+# Clone and enter
 git clone https://github.com/fvilpaz/SoMeliaR.git
 cd SoMeliaR
 
-# Entorno virtual
+# Virtual environment
 python -m venv .venv
 source .venv/bin/activate   # Windows: .venv\Scripts\activate
 
-# Dependencias
+# Dependencies
 pip install -r requirements.txt
 
-# Base de datos
+# Database
 python manage.py migrate
 
-# Superusuario
+# Superuser
 python manage.py createsuperuser
 
-# Servidor de desarrollo
+# Development server
 python manage.py runserver
 ```
 
 ---
 
-## Despliegue en Render
+## Deployment on Render
 
-1. Conectar repositorio GitHub en [render.com](https://render.com)
-2. Tipo de servicio: **Web Service**
+1. Connect the GitHub repository on [render.com](https://render.com)
+2. Service type: **Web Service**
 3. Build command: `./build.sh`
 4. Start command: `gunicorn config.wsgi:application`
-5. Añadir variables de entorno: `SECRET_KEY`, `DEBUG=False`, `GEMINI_API_KEY`, `CLOUDINARY_URL`
+5. Add environment variables: `SECRET_KEY`, `DEBUG=False`, `GEMINI_API_KEY`, `CLOUDINARY_URL`
 
-> **Importante:** `CLOUDINARY_URL` es necesaria para que las imágenes (logos, avatares, fotos de vinos) persistan entre despliegues. Sin ella, Render borra los archivos al reiniciar el contenedor.
-
----
-
-## Importar datos iniciales
-
-Desde **Herramientas → Importar desde Excel**, sube el Libro de Bodega en formato `.xls` o `.xlsx`. El sistema importa automáticamente vinos, proveedores y stock inicial.
+> **Important:** `CLOUDINARY_URL` is required so that images (logos, avatars, wine photos) persist between deployments. Without it, Render deletes files when the container restarts.
 
 ---
 
-## Permisos de usuario
+## Importing initial data
 
-| Rol | Acceso |
+From **Tools → Import from Excel**, upload the Cellar Book in `.xls` or `.xlsx` format. The system automatically imports wines, suppliers, and initial stock.
+
+---
+
+## User permissions
+
+| Role | Access |
 |---|---|
-| Usuario normal | Bodega, pedidos, anotaciones, perfil |
-| Superusuario | Todo lo anterior + Herramientas (importar, logos, limpiar BD) |
+| Regular user | Cellar, orders, notes, profile |
+| Superuser | All of the above + Tools (import, logos, clear DB) |
 
 ---
 
-## Licencia
+## License
 
-Proyecto privado — Meliá Hotels International / Fernando Vilas Paz.
+Private project — Meliá Hotels International / Fernando Vilas Paz.
