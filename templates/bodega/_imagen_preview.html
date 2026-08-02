@@ -1,0 +1,14 @@
+{% if vino.imagen %}
+<img src="{{ vino.imagen.url }}" alt="{{ vino.nombre }}"
+     id="imagen-preview" class="img-fluid rounded mb-2" style="max-height:180px;object-fit:contain;">
+<button type="button" class="btn btn-outline-danger btn-sm d-block"
+        hx-post="{{ path }}"
+        hx-vals='{"borrar":"1"}'
+        hx-target="#imagen-wrap"
+        hx-swap="innerHTML"
+        hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'>
+    <i class="bi bi-trash3 me-1"></i>Eliminar foto
+</button>
+{% else %}
+<p class="text-muted small mb-0">Sin imagen.</p>
+{% endif %}

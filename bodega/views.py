@@ -132,17 +132,7 @@ def vino_imagen_upload(request, pk):
         vino.save()
     if request.POST.get("borrar") and vino.imagen:
         vino.imagen.delete(save=True)
-    preview = (
-        f'<img src="{vino.imagen.url}" alt="{vino.nombre}" '
-        f'id="imagen-preview" class="img-fluid rounded mb-2" style="max-height:180px;object-fit:contain;">'
-        f'<button type="button" class="btn btn-outline-danger btn-sm d-block" '
-        f'hx-post="{request.path}" hx-vals=\'{{"borrar":"1"}}\' '
-        f'hx-target="#imagen-wrap" hx-swap="innerHTML" '
-        f'hx-headers=\'{{"X-CSRFToken":"{request.POST.get("csrfmiddlewaretoken","")}"}}\'>'
-        f'<i class="bi bi-trash3 me-1"></i>Eliminar foto</button>'
-        if vino.imagen else '<p class="text-muted small mb-0">Sin imagen.</p>'
-    )
-    return HttpResponse(preview)
+    return render(request, "bodega/_imagen_preview.html", {"vino": vino, "path": request.path})
 
 
 
@@ -158,15 +148,7 @@ def etiqueta_crear(request):
         nombre__iexact=nombre,
         defaults={"nombre": nombre, "color": color},
     )
-    return HttpResponse(
-        f'<div class="form-check">'
-        f'<input class="form-check-input" type="checkbox" name="etiquetas" '
-        f'value="{etiqueta.pk}" id="etiq_{etiqueta.pk}" checked>'
-        f'<label class="form-check-label" for="etiq_{etiqueta.pk}">'
-        f'<span class="badge bg-{etiqueta.color}">{etiqueta.nombre}</span>'
-        f'</label>'
-        f'</div>'
-    )
+    return render(request, "bodega/_etiqueta_badge.html", {"etiqueta": etiqueta})
 
 
 @login_required

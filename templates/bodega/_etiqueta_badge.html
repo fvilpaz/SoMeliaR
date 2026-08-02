@@ -1,0 +1,7 @@
+<div class="form-check">
+    <input class="form-check-input" type="checkbox" name="etiquetas"
+           value="{{ etiqueta.pk }}" id="etiq_{{ etiqueta.pk }}" checked>
+    <label class="form-check-label" for="etiq_{{ etiqueta.pk }}">
+        <span class="badge bg-{{ etiqueta.color }}">{{ etiqueta.nombre }}</span>
+    </label>
+</div>
