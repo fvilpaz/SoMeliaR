@@ -10,7 +10,7 @@ SECRET_KEY = os.environ.get(
 )
 
 # En producción: DEBUG=False
-DEBUG = os.environ.get("DEBUG", "True") == "True"
+DEBUG = os.environ.get("DEBUG", "False") == "True"
 
 # Render añade automáticamente el host en RENDER_EXTERNAL_HOSTNAME
 ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
@@ -125,8 +125,17 @@ LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "login"
 
-# Email — en demo sale por consola
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+# Email
+if os.environ.get("EMAIL_HOST_USER"):
+    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+    EMAIL_HOST = "smtp.gmail.com"
+    EMAIL_PORT = 587
+    EMAIL_USE_TLS = True
+    EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
+    EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
+    DEFAULT_FROM_EMAIL = os.environ.get("EMAIL_HOST_USER")
+else:
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 # IA — Google Gemini
 # Pon tu API key en la variable de entorno GEMINI_API_KEY
